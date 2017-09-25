@@ -1,0 +1,5 @@
+
+test_cron_job:
+  cron: '* * * * *'
+  class: 'TestCronJob'
+  queue: 'default'

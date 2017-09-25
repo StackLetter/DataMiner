@@ -1,0 +1,9 @@
+:concurrency: 5
+
+:queues:
+  - default
+  - data_mining
+
+:limits:
+    default: 1
+    data_mining: 4
