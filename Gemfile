@@ -16,6 +16,8 @@ gem 'sidekiq-limit_fetch'
 gem 'sidekiq-cron'
 gem 'redis', '~> 3.0'
 
+gem 'rest-client'
+
 #gem 'sass-rails', '~> 5.0'
 #gem 'uglifier', '>= 1.3.0'
 #gem 'turbolinks', '~> 5'

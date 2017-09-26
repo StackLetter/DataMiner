@@ -1,5 +1,9 @@
+every_day_parser:
+  cron: '* 0 * * *'
+  class: 'EveryDayParserJob'
+  queue: 'data_mining'
 
-test_cron_job:
-  cron: '* * * * *'
-  class: 'TestCronJob'
-  queue: 'default'
+event_parser:
+  cron: '*/12 * * * *'
+  class: 'EventParserJob'
+  queue: 'data_mining'

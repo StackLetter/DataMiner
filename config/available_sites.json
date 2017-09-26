@@ -1,0 +1,16 @@
+{"software_eng": {
+  "enabled": true,
+  "id": 1,
+  "api": "softwareengineering"
+  },
+  "mathematics": {
+    "enabled": false,
+    "id": 2,
+    "api": "math"
+  },
+  "stack_overflow": {
+    "enabled": false,
+    "id": 2,
+    "api": "stackoverflow"
+  }
+}
