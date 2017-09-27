@@ -10,57 +10,146 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170926182019) do
+ActiveRecord::Schema.define(version: 20170927142824) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "answers", force: :cascade do |t|
+  create_table "answer_tags", force: :cascade do |t|
+    t.bigint "answers_id", null: false
+    t.bigint "tags_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["answers_id"], name: "index_answer_tags_on_answers_id"
+    t.index ["tags_id"], name: "index_answer_tags_on_tags_id"
+  end
+
+  create_table "answers", force: :cascade do |t|
+    t.integer "external_id"
+    t.integer "site_id"
+    t.integer "up_vote_count"
+    t.integer "down_vote_count"
+    t.integer "owner_id"
+    t.integer "question_id"
+    t.integer "score"
+    t.date "creation_date"
+    t.date "community_owned_date"
+    t.date "last_activity_date"
+    t.date "locked_date"
+    t.text "body"
+    t.boolean "is_accepted"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_answers_on_external_id"
+    t.index ["site_id"], name: "index_answers_on_site_id"
   end
 
   create_table "badges", force: :cascade do |t|
+    t.integer "external_id"
+    t.integer "site_id"
+    t.integer "award_count"
+    t.string "badge_type"
+    t.string "rank"
+    t.string "name"
+    t.text "description"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_badges_on_external_id"
+    t.index ["site_id"], name: "index_badges_on_site_id"
   end
 
   create_table "comments", force: :cascade do |t|
+    t.integer "external_id"
+    t.integer "answer_id"
+    t.integer "question_id"
+    t.integer "score"
+    t.date "creation_date"
+    t.text "body"
+    t.string "post_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_comments_on_external_id"
   end
 
   create_table "question_tags", force: :cascade do |t|
+    t.bigint "questions_id", null: false
+    t.bigint "tags_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["questions_id"], name: "index_question_tags_on_questions_id"
+    t.index ["tags_id"], name: "index_question_tags_on_tags_id"
   end
 
   create_table "questions", force: :cascade do |t|
+    t.integer "accepted_answer_id"
+    t.integer "bounty_amount"
+    t.integer "external_id"
+    t.integer "site_id"
+    t.integer "owner_id"
+    t.integer "score"
+    t.integer "up_vote_count"
+    t.integer "down_vote_count"
+    t.integer "view_count"
+    t.date "bounty_closes_date"
+    t.date "closed_date"
+    t.date "creation_date"
+    t.date "community_owned_date"
+    t.date "last_activity_date"
+    t.date "locked_date"
+    t.text "body"
+    t.string "title"
+    t.boolean "in_answered"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_questions_on_external_id"
+    t.index ["site_id"], name: "index_questions_on_site_id"
   end
 
   create_table "tags", force: :cascade do |t|
+    t.integer "site_id"
+    t.boolean "has_synonyms"
+    t.boolean "is_moderator_only"
+    t.boolean "is_required"
+    t.string "synonyms", default: [], array: true
+    t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["site_id"], name: "index_tags_on_site_id"
   end
 
   create_table "user_badges", force: :cascade do |t|
+    t.bigint "users_id", null: false
+    t.bigint "badges_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["badges_id"], name: "index_user_badges_on_badges_id"
+    t.index ["users_id"], name: "index_user_badges_on_users_id"
+  end
+
+  create_table "user_sites", force: :cascade do |t|
+    t.integer "site_id"
+    t.integer "user_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
   create_table "user_tags", force: :cascade do |t|
+    t.bigint "users_id", null: false
+    t.bigint "tags_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["tags_id"], name: "index_user_tags_on_tags_id"
+    t.index ["users_id"], name: "index_user_tags_on_users_id"
   end
 
   create_table "users", force: :cascade do |t|
     t.integer "external_id"
     t.integer "age"
-    t.integer "badges_count"
     t.integer "reputation"
     t.integer "accept_rate"
+    t.integer "reputation_change_month"
+    t.integer "reputation_change_year"
+    t.integer "reputation_change_week"
     t.date "creation_date"
     t.date "last_access_date"
     t.string "display_name"
@@ -76,4 +165,19 @@ ActiveRecord::Schema.define(version: 20170926182019) do
     t.index ["id"], name: "index_users_on_id"
   end
 
+  add_foreign_key "answer_tags", "answers", column: "answers_id"
+  add_foreign_key "answer_tags", "tags", column: "tags_id"
+  add_foreign_key "answers", "questions"
+  add_foreign_key "answers", "users", column: "owner_id"
+  add_foreign_key "comments", "answers"
+  add_foreign_key "comments", "questions"
+  add_foreign_key "question_tags", "questions", column: "questions_id"
+  add_foreign_key "question_tags", "tags", column: "tags_id"
+  add_foreign_key "questions", "answers", column: "accepted_answer_id"
+  add_foreign_key "questions", "users", column: "owner_id"
+  add_foreign_key "user_badges", "badges", column: "badges_id"
+  add_foreign_key "user_badges", "users", column: "users_id"
+  add_foreign_key "user_sites", "users"
+  add_foreign_key "user_tags", "tags", column: "tags_id"
+  add_foreign_key "user_tags", "users", column: "users_id"
 end

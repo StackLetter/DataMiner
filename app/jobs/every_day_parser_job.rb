@@ -1,9 +1,11 @@
-class EveryDayParserJob < ApplicationJob  queue_as :data_mining
-
+class EveryDayParserJob < ApplicationJob
   queue_as :data_mining
 
   def perform
-    puts 'I work'
+    GenericParserJob.perform_later('Badge')
+    GenericParserJob.perform_later('Tag')
+    ModelSubcontentParserJob.perform_later('UserBadge')
+    ModelSubcontentParserJob.perform_later('UserTag')
   end
 
 end
