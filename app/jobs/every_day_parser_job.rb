@@ -2,10 +2,12 @@ class EveryDayParserJob < ApplicationJob
   queue_as :data_mining
 
   def perform
-    GenericParserJob.perform_later('Badge')
-    GenericParserJob.perform_later('Tag')
-    ModelSubcontentParserJob.perform_later('UserBadge')
-    ModelSubcontentParserJob.perform_later('UserTag')
+    Site.enabled do |site|
+      GenericParserJob.perform_later('Badge', :new, site[:id])
+      GenericParserJob.perform_later('Tag', :new, site[:id])
+      GenericParserJob.perform_later('UserBadge', :update_all, site[:id])
+      GenericParserJob.perform_later('UserTag', :update_all, site[:id])
+    end
   end
 
 end

@@ -9,7 +9,6 @@ class ModelSubcontentParserJob < ApplicationJob
 
       # base model ids, f.e.: users
       ids = api[0].capitalize.singularize.constantize.all.map {|instance| instance.id} if ids == :all
-      ids = [5, 4]
       ids.each_slice(chunk).each do |chunk|
         chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
         page = 1
@@ -20,7 +19,9 @@ class ModelSubcontentParserJob < ApplicationJob
         loop do
           begin
             response = JSON.parse RestClient.get(site_url)
-          rescue
+          rescue Exception => e
+            Rollbar.error("#{klass_error_msg} - #{model}(ids: #{ids.to_s}) --- #{site_url}")
+            return
           end
           model.constantize.process_json_items response['items'], site_id
 
