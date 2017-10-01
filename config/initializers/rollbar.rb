@@ -2,7 +2,7 @@ Rollbar.configure do |config|
   # Without configuration, Rollbar is enabled in all environments.
   # To disable in specific environments, set config.enabled=false.
 
-  config.access_token = ENV['ROLLBAR_ACCESS_TOKEN']
+  config.access_token = ENV['rollbar_access_token']
 
   unless Rails.env.production?
     config.enabled = false
@@ -43,7 +43,7 @@ Rollbar.configure do |config|
   # config.use_sucker_punch
 
   # Enable delayed reporting (using Sidekiq)
-  config.use_sidekiq
+  # config.use_sidekiq
 
   # If you run your staging application instance in production environment then
   # you'll want to override the environment reported by `Rails.env` with an

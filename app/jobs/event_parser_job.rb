@@ -18,7 +18,7 @@ class EventParserJob < ApplicationJob
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
         rescue Exception => e
-          Rollbar.error("#{klass_error_msg} - Event(ids: all) --- #{site_url.to_s}")
+          ErrorReporter.report(:error, e, "#{klass_error_msg} - Event(ids: all) --- #{site_url.to_s}",  response: response)
           return
         end
         response['items'].each do |item|
@@ -76,7 +76,7 @@ class EventParserJob < ApplicationJob
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
         rescue Exception => e
-          Rollbar.error("#{klass_error_msg} - Post(ids: #{ids.to_s}) --- #{site_url.to_s}")
+          ErrorReporter.report(:error, e, "#{klass_error_msg} - Post(ids: #{ids.to_s}) --- #{site_url.to_s}", response: response)
           return
         end
         response['items'].each do |item|

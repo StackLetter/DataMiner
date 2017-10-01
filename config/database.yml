@@ -28,4 +28,4 @@ production:
   <<: *default
   database: DataMiner_production
   username: DataMiner
-  password: <%= ENV['DATAMINER_DATABASE_PASSWORD'] %>
+  password: <%= ENV['dataminer_database_password'] %>

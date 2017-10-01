@@ -28,5 +28,7 @@ module DataMiner
     # Don't generate system test files.
     config.generators.system_tests = nil
     config.active_job.queue_adapter = :sidekiq
+    config.secret_key_base = ENV['secret_key_base']
+    config.error_reporter = 'RollbarErrorReporter'
   end
 end
