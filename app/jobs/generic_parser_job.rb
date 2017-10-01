@@ -5,8 +5,16 @@ class GenericParserJob < ApplicationJob
     chunk_size = 100 # max 100
     page_size = 100
 
-    if method_or_ids == 'update_all' || method_or_ids.is_a?(Array)
-      ids = method_or_ids == 'update_all' ? model.constantize.all.map {|instance| instance.id} : method_or_ids
+    # Update and create in once
+    if method_or_ids.is_a?(Array)
+      method_or_ids.each_slice(chunk_size).each do |chunk|
+        chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
+        process_model_parsing(model, chunk, page_size, site_id, query_params)
+      end
+    end
+
+    if method_or_ids == 'update_all'
+      ids = model.constantize.all.map {|instance| instance.external_id}
       ids.each_slice(chunk_size).each do |chunk|
         chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
         process_model_parsing(model, chunk, page_size, site_id, query_params)
@@ -16,7 +24,17 @@ class GenericParserJob < ApplicationJob
     if method_or_ids == 'new'
       models_since = model.constantize.order(created_at: :desc).limit(1).first
       models_since = models_since ? models_since.created_at.strftime('%s') : DateTime.new(1970).strftime('%s')
-      process_model_parsing(model, nil, page_size, site_id, query_params.merge(fromdate: models_since))
+
+      models = model.underscore.split('_')
+      ids = models.size > 1 ? models[0].capitalize.constantize.all.map(&:external_id) : nil
+
+      if ids
+        ids.each_slice(chunk_size) do |chunk|
+          process_model_parsing(model, chunk, page_size, site_id, query_params.merge(fromdate: models_since))
+        end
+      else
+        process_model_parsing(model, nil, page_size, site_id, query_params.merge(fromdate: models_since))
+      end
     end
   end
 

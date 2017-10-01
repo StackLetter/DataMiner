@@ -2,6 +2,7 @@ class CreateComments < ActiveRecord::Migration[5.1]
   def change
     create_table :comments do |t|
       t.integer :external_id, index: true
+      t.integer :site_id, index: true
       t.integer :answer_id
       t.integer :question_id
       t.integer :score

@@ -1,5 +1,6 @@
 class Badge < ApplicationRecord
-  include StackApiModelConcern
+  include SingleLevelStackApiModelConcern
+  include CustomFindsConcern
 
   has_many :user_badges, dependent: :destroy
 end

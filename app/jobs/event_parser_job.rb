@@ -53,10 +53,10 @@ class EventParserJob < ApplicationJob
         questions = questions + posts[:questions]
       end
 
-      GenericParserJob.perform_later('Comment', comments, site[:id])
       GenericParserJob.perform_later('User', users, site[:id])
       GenericParserJob.perform_later('Question', questions, site[:id])
       GenericParserJob.perform_later('Answer', answers, site[:id])
+      GenericParserJob.perform_later('Comment', comments, site[:id])
     end
   end
 

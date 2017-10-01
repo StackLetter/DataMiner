@@ -1,5 +1,6 @@
 class Tag < ApplicationRecord
-  include StackApiModelConcern
+  include SingleLevelStackApiModelConcern
+  include CustomFindsConcern
 
   has_many :user_tags, dependent: :destroy
   has_many :answer_tags, dependent: :destroy
@@ -7,6 +8,12 @@ class Tag < ApplicationRecord
 
   # TAGS HAVE NOT ID IN StackExchange API :(
   before_save :setup_external_id
+
+  validates :name, uniqueness: true
+
+  def self.find_model_object(api_item_response)
+    self.find_by(name: api_item_response['name'])
+  end
 
   private
 

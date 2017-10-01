@@ -5,6 +5,8 @@ class CreateBadges < ActiveRecord::Migration[5.1]
       t.integer :site_id, index: true
       t.integer :award_count
 
+      t.boolean :user_profiled, default: :false
+
       t.string :badge_type
       t.string :rank
       t.string :name

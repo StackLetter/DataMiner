@@ -7,6 +7,7 @@ class CreateTags < ActiveRecord::Migration[5.1]
       t.boolean :has_synonyms
       t.boolean :is_moderator_only
       t.boolean :is_required
+      t.boolean :user_profiled, default: false
 
       t.string :synonyms, array: true, default: [] # FILTER
       t.string :name
