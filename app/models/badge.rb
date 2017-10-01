@@ -1,7 +1,5 @@
 class Badge < ApplicationRecord
+  include StackApiModelConcern
 
-  def self.process_json_items(items, site_id)
-
-  end
-
+  has_many :user_badges, dependent: :destroy
 end

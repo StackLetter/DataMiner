@@ -1,7 +1,6 @@
 class Comment < ApplicationRecord
+  include StackApiModelConcern
 
-  def self.process_json_items(items, site_id)
-
-  end
-
+  belongs_to :answer
+  belongs_to :question
 end

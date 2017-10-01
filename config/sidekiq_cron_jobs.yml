@@ -1,5 +1,5 @@
 every_day_parser:
-  cron: '* 0 * * *'
+  cron: '0 5 * * *'
   class: 'EveryDayParserJob'
   queue: 'data_mining'
 

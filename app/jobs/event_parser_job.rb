@@ -44,7 +44,7 @@ class EventParserJob < ApplicationJob
         break unless has_more
 
         site_url = Api.build_stack_api_url('Event', nil,
-                                           key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, access_token: 'VBznJilRMY0g(2mEBWsptw))')
+                                           key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 0, access_token: 'VBznJilRMY0g(2mEBWsptw))')
       end
 
       if posts.size > 0

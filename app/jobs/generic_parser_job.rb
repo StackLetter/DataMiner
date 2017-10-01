@@ -1,20 +1,22 @@
 class GenericParserJob < ApplicationJob
   queue_as :data_mining
 
-  def perform(model, method_or_ids = :update_all, site_id = 1, **query_params)
+  def perform(model, method_or_ids = 'update_all', site_id = 1, **query_params)
     chunk_size = 100 # max 100
     page_size = 100
 
-    if method_or_ids == :update_all || method_or_ids.is_a?(Array)
-      ids = method_or_ids == :update_all ? model.constantize.all.map { |instance| instance.id } : method_or_ids
+    if method_or_ids == 'update_all' || method_or_ids.is_a?(Array)
+      ids = method_or_ids == 'update_all' ? model.constantize.all.map {|instance| instance.id} : method_or_ids
       ids.each_slice(chunk_size).each do |chunk|
-        chunk = chunk.map { |items| items.values }.flatten if chunk.first.try(:is_a?, Hash)
+        chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
         process_model_parsing(model, chunk, page_size, site_id, query_params)
       end
     end
 
-    if method_or_ids == :new
-      process_model_parsing(model, nil, page_size, site_id, query_params)
+    if method_or_ids == 'new'
+      models_since = model.constantize.order(created_at: :desc).limit(1).first
+      models_since = models_since ? models_since.created_at.strftime('%s') : DateTime.new(1970).strftime('%s')
+      process_model_parsing(model, nil, page_size, site_id, query_params.merge(fromdate: models_since))
     end
   end
 
@@ -23,10 +25,9 @@ class GenericParserJob < ApplicationJob
   def process_model_parsing(model, ids, page_size, site_id, query_params)
     page = 1
     has_more = true
-    site = Site.enabled.select { |site| site[:id] == site_id }.first
+    site = Site.enabled.select {|site| site[:id] == site_id}.first
     site_url = Api.build_stack_api_url(model, ids,
-                                       {key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], order: :desc, sort: :creation}.merge(query_params))
-
+                                       {key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api]}.merge(query_params))
     loop do
       begin
         response = JSON.parse RestClient.get(site_url.to_s)
@@ -42,7 +43,7 @@ class GenericParserJob < ApplicationJob
       break unless has_more
 
       site_url = Api.build_stack_api_url(model, ids,
-                                         {key: '', page_size: page_size, page: page, site: site[:api], order: :desc, sort: :creation}.merge(query_params))
+                                         {key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api]}.merge(query_params))
     end
   end
 

@@ -1,9 +1,7 @@
 class Question < ApplicationRecord
+  include StackApiModelConcern
 
-  has_many :answers
-
-  def self.process_json_items(items, site_id)
-
-  end
-
+  belongs_to :owner, class: 'User'
+  has_many :answers, dependent: :destroy
+  has_many :question_tags, dependent: :destroy
 end

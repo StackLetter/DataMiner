@@ -2,6 +2,7 @@ class CreateTags < ActiveRecord::Migration[5.1]
   def change
     create_table :tags do |t|
       t.integer :site_id, index: true
+      t.integer :external_id, index: true
 
       t.boolean :has_synonyms
       t.boolean :is_moderator_only

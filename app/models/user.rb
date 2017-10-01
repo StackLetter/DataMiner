@@ -1,7 +1,7 @@
 class User < ApplicationRecord
+  include StackApiModelConcern
 
-  def self.process_json_items(items, site_id)
-    puts 'Zijem!'
-  end
-
+  has_many :user_tags, dependent: :destroy
+  has_many :user_sites, dependent: :destroy
+  has_many :user_badges, dependent: :destroy
 end
