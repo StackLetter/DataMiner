@@ -21,8 +21,6 @@ class User < ApplicationRecord
   private
 
   def set_up_user_site
-    unless self.user_sites.map(&:id).include? self.site_id
-      UserSite.find_or_create_by(user_id: self.id, site_id: self.site_id)
-    end
+    UserSite.find_or_create_by(user_id: self.id, site_id: self.site_id)
   end
 end

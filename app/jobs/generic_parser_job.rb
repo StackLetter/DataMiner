@@ -14,7 +14,7 @@ class GenericParserJob < ApplicationJob
     end
 
     if method_or_ids == 'update_all'
-      ids = model.constantize.all.map {|instance| instance.external_id}
+      ids = model.constantize.all.map(&:external_id)
       ids.each_slice(chunk_size).each do |chunk|
         chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
         process_model_parsing(model, chunk, page_size, site_id, query_params)

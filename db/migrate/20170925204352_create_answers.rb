@@ -21,7 +21,6 @@ class CreateAnswers < ActiveRecord::Migration[5.1]
       t.timestamps
     end
 
-    add_foreign_key :questions, :answers, column: :accepted_answer_id, index: true
     add_foreign_key :answers, :users, column: :owner_id, index: true
     add_foreign_key :answers, :questions, column: :question_id, index: true, null: false
   end

@@ -12,8 +12,7 @@ class EventParserJob < ApplicationJob
       has_more = true
       questions, answers, comments, users, posts = [], [], [], [], []
       site_url = Api.build_stack_api_url('Event', nil,
-                                         key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, access_token: 'VBznJilRMY0g(2mEBWsptw))')
-
+                                         key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, access_token: '5PbtRbcNjg6Z*7uj7QRH9g))')
       loop do
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
@@ -44,7 +43,7 @@ class EventParserJob < ApplicationJob
         break unless has_more
 
         site_url = Api.build_stack_api_url('Event', nil,
-                                           key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 0, access_token: 'VBznJilRMY0g(2mEBWsptw))')
+                                           key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 0, access_token: '5PbtRbcNjg6Z*7uj7QRH9g))')
       end
 
       if posts.size > 0
@@ -54,9 +53,9 @@ class EventParserJob < ApplicationJob
       end
 
       GenericParserJob.perform_later('User', users, site[:id])
-      GenericParserJob.perform_later('Question', questions, site[:id])
+      GenericParserJob.perform_later('Question', [500], site[:id])
       GenericParserJob.perform_later('Answer', answers, site[:id])
-      GenericParserJob.perform_later('Comment', comments, site[:id])
+   #   GenericParserJob.perform_later('Comment', comments, site[:id])
     end
   end
 
@@ -71,13 +70,13 @@ class EventParserJob < ApplicationJob
       has_more = true
       page = 1
       site_url = Api.build_stack_api_url('Post', chunk,
-                                         key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, order: :desc, sort: :creation, access_token: 'VBznJilRMY0g(2mEBWsptw))')
+                                         key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, order: :desc, sort: :creation, access_token: '5PbtRbcNjg6Z*7uj7QRH9g))')
       loop do
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
         rescue Exception => e
           ErrorReporter.report(:error, e, "#{klass_error_msg} - Post(ids: #{ids.to_s}) --- #{site_url.to_s}", response: response)
-          return
+          return to_return
         end
         response['items'].each do |item|
           next unless VALID_POST_TYPES.include? item['post_type']

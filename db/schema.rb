@@ -179,7 +179,6 @@ ActiveRecord::Schema.define(version: 20170927142824) do
   add_foreign_key "comments", "questions"
   add_foreign_key "question_tags", "questions"
   add_foreign_key "question_tags", "tags"
-  add_foreign_key "questions", "answers", column: "accepted_answer_id"
   add_foreign_key "questions", "users", column: "owner_id"
   add_foreign_key "user_badges", "badges"
   add_foreign_key "user_badges", "users"
