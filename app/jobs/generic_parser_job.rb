@@ -8,6 +8,7 @@ class GenericParserJob < ApplicationJob
     # Update and create in once
     if method_or_ids.is_a?(Array)
       method_or_ids.each_slice(chunk_size).each do |chunk|
+        return if chunk.first == nil
         chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
         process_model_parsing(model, chunk, page_size, site_id, query_params)
       end

@@ -70,7 +70,9 @@ ActiveRecord::Schema.define(version: 20170927142824) do
     t.string "post_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["answer_id"], name: "index_comments_on_answer_id"
     t.index ["external_id"], name: "index_comments_on_external_id"
+    t.index ["question_id"], name: "index_comments_on_question_id"
     t.index ["site_id"], name: "index_comments_on_site_id"
   end
 
@@ -101,7 +103,7 @@ ActiveRecord::Schema.define(version: 20170927142824) do
     t.date "locked_date"
     t.text "body"
     t.string "title"
-    t.boolean "in_answered"
+    t.boolean "is_answered"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["external_id"], name: "index_questions_on_external_id"
@@ -175,8 +177,6 @@ ActiveRecord::Schema.define(version: 20170927142824) do
   add_foreign_key "answer_tags", "tags"
   add_foreign_key "answers", "questions"
   add_foreign_key "answers", "users", column: "owner_id"
-  add_foreign_key "comments", "answers"
-  add_foreign_key "comments", "questions"
   add_foreign_key "question_tags", "questions"
   add_foreign_key "question_tags", "tags"
   add_foreign_key "questions", "users", column: "owner_id"

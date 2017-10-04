@@ -2,7 +2,7 @@ class Comment < ApplicationRecord
   belongs_to :answer, required: false
   belongs_to :question, required: false
 
-  attr_accessor :post_id
+  attr_accessor :post_id, :post
 
   validate :one_foreign_key
 
@@ -10,8 +10,19 @@ class Comment < ApplicationRecord
 
   def assign_attributes(new_attributes)
     output = super(new_attributes)
-    setup_correct_reference
+    setup_correct_reference if new_attributes.size > 1
     output
+  end
+
+  def self.post_class_name(type)
+    case type
+      when 'question'
+        'Question'
+      when 'answer'
+        'Answer'
+      else
+        raise Exception, 'Failed to recognize comment Post class.'
+    end
   end
 
   private
@@ -30,14 +41,16 @@ class Comment < ApplicationRecord
       when :answer
         self.answer_id = self.post_id
       else
-        self.question_id = self.post_id
-        self.post_type = 'question'
+        raise Exception, 'Failed to recognize comment Post.'
     end
   end
 
   def one_foreign_key
-    errors.add(:answer, :not_specified, message: 'Question or Answer must be specified') if self.post_type == 'question'
-    errors.add(:question, :not_specified, message: 'Question or Answer must be specified') if self.post_type == 'answer'
+    if self.answer_id.blank? && self.question_id.blank?
+      errors.add(:post, :not_specified, message: 'Question or Answer must be specified')
+    end
+    errors.add(:post, :not_specified, message: 'Question missing') if self.question_id && !Question.exists?(id: self.question_id)
+    errors.add(:post, :not_specified, message: 'Answer missing') if self.answer_id && !Answer.exists?(id: self.answer_id)
   end
 
 end

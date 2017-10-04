@@ -21,7 +21,7 @@ class CreateQuestions < ActiveRecord::Migration[5.1]
       t.text :body # FILTER
       t.string :title
 
-      t.boolean :in_answered
+      t.boolean :is_answered
 
       t.timestamps
     end

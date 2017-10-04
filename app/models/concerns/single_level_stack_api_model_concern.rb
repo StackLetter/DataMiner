@@ -4,14 +4,14 @@ module SingleLevelStackApiModelConcern
   NOT_VALIDATE_EXTERNAL = ['tag']
   NOT_VALIDATE_SITE = ['user']
 
-  def self.name_map(name)
+  def self.name_map(name, type = nil)
     case name
       when 'Owner'
         'User'
-      when 'Accepted'
+      when 'AcceptedAnswer' || 'Accepted'
         'Answer'
       when 'Post'
-        'Question' # TODO remove hotifx for comments
+        Comment.post_class_name(type)
       else
         name
     end
@@ -30,7 +30,7 @@ module SingleLevelStackApiModelConcern
           data = self::API_ATTRIBUTES.reduce({}) do |hash, key|
             hash[key] = DateTime.strptime(item[key].to_s, '%s') if key.include?('date') && item[key]
             if key.end_with?('_id') && item[key]
-              some_instance = SingleLevelStackApiModelConcern.name_map(key.split('_')[-2].camelize).constantize.find_by(external_id: item[key])
+              some_instance = SingleLevelStackApiModelConcern.name_map(key.split('_')[-2].camelize, item['post_type']).constantize.find_by(external_id: item[key])
               hash[key] = some_instance ? some_instance.id : item[key]
             end
 
@@ -51,11 +51,12 @@ module SingleLevelStackApiModelConcern
             model.update(data)
             self.initialize_tags(model, item['tags']) if model.respond_to?(:load_tags_after_parsing)
           else
-            missing_models = model.errors.details.select { |_, detail| detail.select { |detail| [:not_specified, :blank].include?(detail[:error]) }.size > 0 }
+            missing_models = model.errors.details.select {|_, detail| detail.select {|detail| [:not_specified, :blank].include?(detail[:error])}.size > 0}
             if missing_models.size > 0
-              missing_models.keys.each do |object|
-                missing_models_class_name = object.to_s.split('_')[-1]
-                GenericParserJob.perform_later(SingleLevelStackApiModelConcern.name_map(missing_models_class_name.camelize), [item[object.to_s + '_id'] || item['owner']['user_id']], site_id)
+              missing_models.keys.each do |object, _|
+                missing_models_class_name = object.to_s.capitalize
+                return if [item[object.to_s + '_id']].blank?
+                GenericParserJob.perform_later(SingleLevelStackApiModelConcern.name_map(missing_models_class_name.camelize, item['post_type']), [item[object.to_s + '_id'] || item['owner']['user_id']], site_id)
               end
               GenericParserJob.perform_later(model.class.name, [model.external_id], site_id)
             end
