@@ -1,7 +1,6 @@
 class EventParserJob < ApplicationJob
   queue_as :data_mining
 
-  #TODO key, access_token?
   VALID_EVENT_TYPES = ['comment_posted', 'user_created', 'answer_posted', 'question_posted', 'post_edited']
   VALID_POST_TYPES = ['question', 'answer']
 
@@ -12,7 +11,7 @@ class EventParserJob < ApplicationJob
       has_more = true
       questions, answers, comments, users, posts = [], [], [], [], []
       site_url = Api.build_stack_api_url('Event', nil,
-                                         key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, access_token: '5PbtRbcNjg6Z*7uj7QRH9g))')
+                                         key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site[:api], since: 15, access_token: ENV['base_access_token'])
       loop do
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
@@ -43,7 +42,7 @@ class EventParserJob < ApplicationJob
         break unless has_more
 
         site_url = Api.build_stack_api_url('Event', nil,
-                                           key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 0, access_token: '5PbtRbcNjg6Z*7uj7QRH9g))')
+                                           key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site[:api], since: 0, access_token: ENV['base_access_token'])
       end
 
       if posts.size > 0
@@ -53,8 +52,9 @@ class EventParserJob < ApplicationJob
       end
 
       GenericParserJob.perform_later('User', users, site[:id])
-      GenericParserJob.perform_later('Question', [500], site[:id])
+      GenericParserJob.perform_later('Question', questions, site[:id])
       GenericParserJob.perform_later('Answer', answers, site[:id])
+      # TODO enable this
    #   GenericParserJob.perform_later('Comment', comments, site[:id])
     end
   end
@@ -70,7 +70,7 @@ class EventParserJob < ApplicationJob
       has_more = true
       page = 1
       site_url = Api.build_stack_api_url('Post', chunk,
-                                         key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, order: :desc, sort: :creation, access_token: '5PbtRbcNjg6Z*7uj7QRH9g))')
+                                         key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site[:api], since: 15, order: :desc, sort: :creation, access_token: ENV['base_access_token'])
       loop do
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
@@ -95,7 +95,7 @@ class EventParserJob < ApplicationJob
         break unless has_more
 
         site_url = Api.build_stack_api_url('Post', chunk,
-                                           key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api], since: 15, order: :desc, sort: :creation, access_token: 'VBznJilRMY0g(2mEBWsptw))')
+                                           key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site[:api], since: 15, order: :desc, sort: :creation, access_token: ENV['base_access_token'])
       end
     end
 

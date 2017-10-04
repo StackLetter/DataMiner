@@ -45,7 +45,7 @@ class GenericParserJob < ApplicationJob
     has_more = true
     site = Site.enabled.select {|site| site[:id] == site_id}.first
     site_url = Api.build_stack_api_url(model, ids,
-                                       {key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api]}.merge(query_params))
+                                       {key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site[:api]}.merge(query_params))
     loop do
       begin
         response = JSON.parse RestClient.get(site_url.to_s)
@@ -61,7 +61,7 @@ class GenericParserJob < ApplicationJob
       break unless has_more
 
       site_url = Api.build_stack_api_url(model, ids,
-                                         {key: 'U4DMV*8nvpm3EOpvf69Rxw((', page_size: page_size, page: page, site: site[:api]}.merge(query_params))
+                                         {key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site[:api]}.merge(query_params))
     end
   end
 

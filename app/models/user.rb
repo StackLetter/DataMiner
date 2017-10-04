@@ -7,6 +7,8 @@ class User < ApplicationRecord
   has_many :user_badges, dependent: :destroy
   has_many :sites, through: :user_sites
   has_many :tags, through: :user_tags
+  has_many :questions, dependent: :destroy, foreign_key: :owner_id
+  has_many :answers, dependent: :destroy, foreign_key: :owner_id
 
   attr_accessor :site_id
 

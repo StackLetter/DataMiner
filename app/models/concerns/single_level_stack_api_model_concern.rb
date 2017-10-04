@@ -47,8 +47,9 @@ module SingleLevelStackApiModelConcern
           data = data.merge('owner_id': User.find_by(external_id: item['owner']['user_id']).try(:id)) if model.respond_to?(:owner_id)
           model.assign_attributes(data)
           if model.valid?
-            model.update!(data)
-            self.initialize_tags!(model, item['tags']) if model.respond_to?(:load_tags_after_parsing)
+            model.save
+            model.update(data)
+            self.initialize_tags(model, item['tags']) if model.respond_to?(:load_tags_after_parsing)
           else
             missing_models = model.errors.details.select { |_, detail| detail.select { |detail| [:not_specified, :blank].include?(detail[:error]) }.size > 0 }
             if missing_models.size > 0
@@ -66,12 +67,12 @@ module SingleLevelStackApiModelConcern
 
     private
 
-    def self.initialize_tags!(model, tags)
+    def self.initialize_tags(model, tags)
       db_tags = Tag.where(name: tags)
       model_id = model.class.name.downcase + '_id'
 
       db_tags.each do |tag|
-        model_tag = "#{model.class.name}Tag".constantize.find_or_create_by!(model_id.to_sym => model.id, tag_id: tag.id)
+        model_tag = "#{model.class.name}Tag".constantize.find_or_create_by(model_id.to_sym => model.id, tag_id: tag.id)
       end
     end
 

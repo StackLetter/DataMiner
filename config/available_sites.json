@@ -10,7 +10,7 @@
   },
   "stack_overflow": {
     "enabled": false,
-    "id": 2,
+    "id": 3,
     "api": "stackoverflow"
   }
 }

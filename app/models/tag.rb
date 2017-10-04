@@ -12,7 +12,8 @@ class Tag < ApplicationRecord
   validates :name, uniqueness: true
 
   def self.find_model_object(api_item_response)
-    self.find_by(name: api_item_response['name'])
+    return self.find_by(name: api_item_response['name'])
+    nil
   end
 
   private

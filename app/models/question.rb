@@ -4,7 +4,7 @@ class Question < ApplicationRecord
 
   belongs_to :owner, class_name: 'User'
   has_many :answers, dependent: :destroy
-  has_one :accepted_answer, class_name: 'Answer'
+  has_one :accepted_answer, class_name: 'Answer', dependent: :destroy
   has_many :question_tags, dependent: :destroy
   has_many :tags, through: :question_tags
 
