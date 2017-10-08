@@ -5,3 +5,14 @@
 #
 #   movies = Movie.create([{ name: 'Star Wars' }, { name: 'Lord of the Rings' }])
 #   Character.create(name: 'Luke', movie: movies.first)
+
+sites = File.read 'config/available_sites.json'
+sites = JSON.parse sites
+
+Site.transaction do
+  sites.each do |_key, value|
+
+    Site.create(api: value['api'], enabled: value['enabled'], config_id: value['id'])
+
+  end
+end

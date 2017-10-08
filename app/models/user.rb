@@ -9,6 +9,7 @@ class User < ApplicationRecord
   has_many :tags, through: :user_tags
   has_many :questions, dependent: :destroy, foreign_key: :owner_id
   has_many :answers, dependent: :destroy, foreign_key: :owner_id
+  has_one :account, through: :account_users
 
   attr_accessor :site_id
 

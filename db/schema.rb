@@ -10,10 +10,26 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20170927142824) do
+ActiveRecord::Schema.define(version: 20171008150044) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "account_users", force: :cascade do |t|
+    t.bigint "account_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_account_users_on_account_id"
+    t.index ["user_id"], name: "index_account_users_on_user_id"
+  end
+
+  create_table "accounts", force: :cascade do |t|
+    t.string "email"
+    t.integer "external_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "answer_tags", force: :cascade do |t|
     t.bigint "answer_id", null: false
@@ -110,6 +126,15 @@ ActiveRecord::Schema.define(version: 20170927142824) do
     t.index ["site_id"], name: "index_questions_on_site_id"
   end
 
+  create_table "sites", force: :cascade do |t|
+    t.string "api"
+    t.boolean "enabled"
+    t.string "name"
+    t.integer "config_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "tags", force: :cascade do |t|
     t.integer "site_id"
     t.integer "external_id"
@@ -173,6 +198,8 @@ ActiveRecord::Schema.define(version: 20170927142824) do
     t.index ["id"], name: "index_users_on_id"
   end
 
+  add_foreign_key "account_users", "accounts"
+  add_foreign_key "account_users", "users"
   add_foreign_key "answer_tags", "answers"
   add_foreign_key "answer_tags", "tags"
   add_foreign_key "answers", "questions"
@@ -182,6 +209,7 @@ ActiveRecord::Schema.define(version: 20170927142824) do
   add_foreign_key "questions", "users", column: "owner_id"
   add_foreign_key "user_badges", "badges"
   add_foreign_key "user_badges", "users"
+  add_foreign_key "user_sites", "sites"
   add_foreign_key "user_sites", "users"
   add_foreign_key "user_tags", "tags"
   add_foreign_key "user_tags", "users"

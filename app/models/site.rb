@@ -1,7 +1,7 @@
-class Site
+class Site < ApplicationRecord
 
-  def self.enabled
-    $sites.select { |site| $sites[site][:enabled] }.map { |site| site[1]}
-  end
+  scope :enabled, -> { where(enabled: true) }
+
+  validates :config_id, uniqueness: true
 
 end
