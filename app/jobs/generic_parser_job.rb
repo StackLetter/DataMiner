@@ -23,9 +23,9 @@ class GenericParserJob < ApplicationJob
       end
     end
 
-    if method_or_ids == 'new'
+    if method_or_ids == 'new' || method_or_ids == 'all'
       models_since = model.constantize.order(created_at: :desc).limit(1).first
-      models_since = models_since ? models_since.created_at.strftime('%s') : DateTime.new(1970).strftime('%s')
+      models_since = (models_since && method_or_ids ==  'new') ? models_since.created_at.strftime('%s') : DateTime.new(1970).strftime('%s')
 
       models = model.underscore.split('_')
       ids = models.size > 1 ? models[0].capitalize.constantize.all.map(&:external_id) : nil

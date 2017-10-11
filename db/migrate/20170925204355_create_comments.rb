@@ -5,6 +5,7 @@ class CreateComments < ActiveRecord::Migration[5.1]
       t.integer :site_id, index: true
       t.integer :answer_id, index: true
       t.integer :question_id, index: true
+      t.integer :owner_id
       t.integer :score
 
       t.date :creation_date
@@ -16,5 +17,6 @@ class CreateComments < ActiveRecord::Migration[5.1]
       t.timestamps
     end
 
+    add_foreign_key :comments, :users, column: :owner_id, index: true, null: true
   end
 end

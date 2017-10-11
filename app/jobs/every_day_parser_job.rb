@@ -5,8 +5,8 @@ class EveryDayParserJob < ApplicationJob
     Site.enabled.each do |site|
       GenericParserJob.perform_later('Badge', 'new', site.id)
       GenericParserJob.perform_later('Tag', 'new', site.id)
-      GenericParserJob.perform_later('UserBadge', 'new', site.id)
-      GenericParserJob.perform_later('UserTag', 'new', site.id)
+      GenericParserJob.perform_later('UserBadge', 'all', site.id)
+      GenericParserJob.perform_later('UserTag', 'all', site.id)
       GenericParserJob.perform_later('Badge', 'update_all', site.id)
     end
   end

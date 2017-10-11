@@ -151,6 +151,8 @@ GEM
       sidekiq (>= 4.2.1)
     sidekiq-limit_fetch (3.4.0)
       sidekiq (>= 4)
+    sidekiq-uniq (0.8.0)
+      sidekiq
     spring (2.0.2)
       activesupport (>= 4.2)
     spring-watcher-listen (2.0.1)
@@ -197,6 +199,7 @@ DEPENDENCIES
   sidekiq
   sidekiq-cron
   sidekiq-limit_fetch
+  sidekiq-uniq
   spring
   spring-watcher-listen (~> 2.0.0)
   tzinfo-data

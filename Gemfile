@@ -15,6 +15,7 @@ gem 'rollbar'
 gem 'sidekiq'
 gem 'sidekiq-limit_fetch'
 gem 'sidekiq-cron'
+gem 'sidekiq-uniq'
 gem 'redis', '~> 3.0'
 
 gem 'rest-client'

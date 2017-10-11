@@ -1,9 +1,10 @@
 class Answer < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include ApiTagsIncludedConcern
+  include OwnerValidationConcern
 
   belongs_to :question
-  belongs_to :owner, class_name: 'User'
+  belongs_to :owner, class_name: 'User', optional: true
   has_many :comments, dependent: :destroy
 
   has_many :answer_tags, dependent: :destroy

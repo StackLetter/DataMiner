@@ -3,6 +3,8 @@ class CreateUsers < ActiveRecord::Migration[5.1]
 
     create_table :users do |t|
       t.integer :external_id, index: true
+      t.integer :account_id
+      t.integer :site_id
       t.integer :age
       t.integer :reputation
       t.integer :accept_rate
@@ -17,8 +19,6 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       t.string :user_type
       t.string :website_url
       t.string :location
-      t.string :email
-      t.string :token
 
       t.boolean :is_employee
 

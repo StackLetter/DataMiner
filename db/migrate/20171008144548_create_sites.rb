@@ -9,6 +9,6 @@ class CreateSites < ActiveRecord::Migration[5.1]
       t.timestamps
     end
 
-    add_foreign_key :user_sites, :sites, column: :site_id, null: false, index: true
+    add_foreign_key :users, :sites, column: :site_id, index: true, null: false
   end
 end

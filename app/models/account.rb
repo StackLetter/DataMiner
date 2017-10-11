@@ -1,5 +1,5 @@
 class Account < ApplicationRecord
 
-  has_many :users, through: :account_users
+  validates :email, uniqueness: true
 
 end

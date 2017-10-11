@@ -29,9 +29,10 @@ module SingleLevelStackApiModelConcern
 
           data = self::API_ATTRIBUTES.reduce({}) do |hash, key|
             hash[key] = DateTime.strptime(item[key].to_s, '%s') if key.include?('date') && item[key]
-            if key.end_with?('_id') && item[key]
+            if (key.end_with?('_id') && item[key]) || (key.start_with?('owner') && item['owner'].try(:[], 'user_id'))
               some_instance = SingleLevelStackApiModelConcern.name_map(key.split('_')[-2].camelize, item['post_type']).constantize.find_by(external_id: item[key])
               hash[key] = some_instance ? some_instance.id : item[key]
+              hash[key] = item['owner'].try(:[], 'user_id') if key.start_with?('owner')
             end
 
             hash[key] = item[key] unless hash[key]
@@ -44,7 +45,8 @@ module SingleLevelStackApiModelConcern
           model = self.find_or_initialize_by(external_id: data['external_id'])
           model = self.find_or_initialize_by(name: data['name']) unless model
 
-          data = data.merge('owner_id': User.find_by(external_id: item['owner']['user_id']).try(:id)) if model.respond_to?(:owner_id)
+          db_owner_id = User.find_by(external_id: item['owner'].try(:[], 'user_id')).try(:id)
+          data = data.merge('owner_id': db_owner_id) if model.respond_to?(:owner_id) && db_owner_id
           model.assign_attributes(data)
           if model.valid?
             model.save
@@ -56,7 +58,7 @@ module SingleLevelStackApiModelConcern
               missing_models.keys.each do |object, _|
                 missing_models_class_name = object.to_s.capitalize
                 return if [item[object.to_s + '_id']].blank?
-                GenericParserJob.perform_later(SingleLevelStackApiModelConcern.name_map(missing_models_class_name.camelize, item['post_type']), [item[object.to_s + '_id'] || item['owner']['user_id']], site_id)
+                GenericParserJob.perform_later(SingleLevelStackApiModelConcern.name_map(missing_models_class_name.camelize, item['post_type']), [item[object.to_s + '_id'] || item['owner'].try(:[], 'user_id')], site_id)
               end
               GenericParserJob.perform_later(model.class.name, [model.external_id], site_id)
             end

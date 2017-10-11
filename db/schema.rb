@@ -10,23 +10,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171008150044) do
+ActiveRecord::Schema.define(version: 20171008144548) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
-  create_table "account_users", force: :cascade do |t|
-    t.bigint "account_id", null: false
-    t.bigint "user_id", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_account_users_on_account_id"
-    t.index ["user_id"], name: "index_account_users_on_user_id"
-  end
-
   create_table "accounts", force: :cascade do |t|
-    t.string "email"
     t.integer "external_id"
+    t.string "email"
+    t.string "frequency"
+    t.string "token"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -80,6 +73,7 @@ ActiveRecord::Schema.define(version: 20171008150044) do
     t.integer "site_id"
     t.integer "answer_id"
     t.integer "question_id"
+    t.integer "owner_id"
     t.integer "score"
     t.date "creation_date"
     t.text "body"
@@ -159,13 +153,6 @@ ActiveRecord::Schema.define(version: 20171008150044) do
     t.index ["user_id"], name: "index_user_badges_on_user_id"
   end
 
-  create_table "user_sites", force: :cascade do |t|
-    t.integer "site_id"
-    t.integer "user_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-  end
-
   create_table "user_tags", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "tag_id", null: false
@@ -177,6 +164,8 @@ ActiveRecord::Schema.define(version: 20171008150044) do
 
   create_table "users", force: :cascade do |t|
     t.integer "external_id"
+    t.integer "account_id"
+    t.integer "site_id"
     t.integer "age"
     t.integer "reputation"
     t.integer "accept_rate"
@@ -189,8 +178,6 @@ ActiveRecord::Schema.define(version: 20171008150044) do
     t.string "user_type"
     t.string "website_url"
     t.string "location"
-    t.string "email"
-    t.string "token"
     t.boolean "is_employee"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -198,19 +185,17 @@ ActiveRecord::Schema.define(version: 20171008150044) do
     t.index ["id"], name: "index_users_on_id"
   end
 
-  add_foreign_key "account_users", "accounts"
-  add_foreign_key "account_users", "users"
   add_foreign_key "answer_tags", "answers"
   add_foreign_key "answer_tags", "tags"
   add_foreign_key "answers", "questions"
   add_foreign_key "answers", "users", column: "owner_id"
+  add_foreign_key "comments", "users", column: "owner_id"
   add_foreign_key "question_tags", "questions"
   add_foreign_key "question_tags", "tags"
   add_foreign_key "questions", "users", column: "owner_id"
   add_foreign_key "user_badges", "badges"
   add_foreign_key "user_badges", "users"
-  add_foreign_key "user_sites", "sites"
-  add_foreign_key "user_sites", "users"
   add_foreign_key "user_tags", "tags"
   add_foreign_key "user_tags", "users"
+  add_foreign_key "users", "sites"
 end

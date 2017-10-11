@@ -26,6 +26,6 @@ class CreateQuestions < ActiveRecord::Migration[5.1]
       t.timestamps
     end
 
-    add_foreign_key :questions, :users, column: :owner_id, index: true
+    add_foreign_key :questions, :users, column: :owner_id, index: true, null: true
   end
 end

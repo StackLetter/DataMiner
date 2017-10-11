@@ -1,6 +1,9 @@
 class Comment < ApplicationRecord
+  include OwnerValidationConcern
+
   belongs_to :answer, required: false
   belongs_to :question, required: false
+  belongs_to :owner, class_name: 'User', optional: true
 
   attr_accessor :post_id, :post
 
@@ -49,8 +52,8 @@ class Comment < ApplicationRecord
     if self.answer_id.blank? && self.question_id.blank?
       errors.add(:post, :not_specified, message: 'Question or Answer must be specified')
     end
-    errors.add(:post, :not_specified, message: 'Question missing') if self.question_id && !Question.exists?(id: self.question_id)
-    errors.add(:post, :not_specified, message: 'Answer missing') if self.answer_id && !Answer.exists?(id: self.answer_id)
+    errors.add(:post, :not_specified, message: 'Question missing') if self.question_id && !Question.exists?(id: self.question_id) && self.post_type == 'question'
+    errors.add(:post, :not_specified, message: 'Answer missing') if self.answer_id && !Answer.exists?(id: self.answer_id) && self.post_type == 'answer'
   end
 
 end
