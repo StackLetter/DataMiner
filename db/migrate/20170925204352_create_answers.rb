@@ -9,10 +9,10 @@ class CreateAnswers < ActiveRecord::Migration[5.1]
       t.integer :question_id
       t.integer :score
 
-      t.date :creation_date
-      t.date :community_owned_date
-      t.date :last_activity_date
-      t.date :locked_date
+      t.datetime :creation_date
+      t.datetime :community_owned_date
+      t.datetime :last_activity_date
+      t.datetime :locked_date
 
       t.text :body # FILTER
 

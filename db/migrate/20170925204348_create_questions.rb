@@ -11,12 +11,12 @@ class CreateQuestions < ActiveRecord::Migration[5.1]
       t.integer :down_vote_count # FILTER
       t.integer :view_count
 
-      t.date :bounty_closes_date
-      t.date :closed_date
-      t.date :creation_date
-      t.date :community_owned_date
-      t.date :last_activity_date
-      t.date :locked_date
+      t.datetime :bounty_closes_date
+      t.datetime :closed_date
+      t.datetime :creation_date
+      t.datetime :community_owned_date
+      t.datetime :last_activity_date
+      t.datetime :locked_date
 
       t.text :body # FILTER
       t.string :title

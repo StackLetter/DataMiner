@@ -8,7 +8,7 @@ class CreateComments < ActiveRecord::Migration[5.1]
       t.integer :owner_id
       t.integer :score
 
-      t.date :creation_date
+      t.datetime :creation_date
 
       t.text :body # FILTER
 

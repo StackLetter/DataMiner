@@ -12,8 +12,8 @@ class CreateUsers < ActiveRecord::Migration[5.1]
       t.integer :reputation_change_year
       t.integer :reputation_change_week
 
-      t.date :creation_date
-      t.date :last_access_date
+      t.datetime :creation_date
+      t.datetime :last_access_date
 
       t.string :display_name
       t.string :user_type

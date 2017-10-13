@@ -10,13 +10,6 @@ development:
   database: DataMiner_development
   username: postgres
   password: postgres
-  #host: localhost
-  #port: 5432
-  # Minimum log levels, in increasing order:
-  #   debug5, debug4, debug3, debug2, debug1,
-  #   log, notice, warning, error, fatal, and panic
-  # Defaults to warning.
-  #min_messages: notice
 
 test:
   <<: *default
@@ -27,5 +20,5 @@ test:
 production:
   <<: *default
   database: DataMiner_production
-  username: DataMiner
+  username: stackletter
   password: <%= ENV['dataminer_database_password'] %>
