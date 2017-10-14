@@ -12,7 +12,7 @@ sites = JSON.parse sites
 Site.transaction do
   sites.each do |_key, value|
 
-    Site.create(api: value['api'], enabled: value['enabled'], config_id: value['id'])
+    Site.create(api: value['api'], enabled: value['enabled'], config_id: value['id'], name: value['name'])
 
   end
 end

@@ -1,16 +1,19 @@
 {"software_eng": {
   "enabled": true,
   "id": 1,
-  "api": "softwareengineering"
+  "api": "softwareengineering",
+  "name": "Software Engineering Stack Exchange"
   },
   "mathematics": {
     "enabled": false,
     "id": 2,
-    "api": "math"
+    "api": "math",
+    "name": "Mathematics Stack Exchange"
   },
   "stack_overflow": {
     "enabled": false,
     "id": 3,
-    "api": "stackoverflow"
+    "api": "stackoverflow",
+    "name": "Stack Overflow"
   }
 }
