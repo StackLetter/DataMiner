@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171016191453) do
+ActiveRecord::Schema.define(version: 20171018142222) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -85,6 +85,38 @@ ActiveRecord::Schema.define(version: 20171016191453) do
     t.index ["external_id"], name: "index_comments_on_external_id"
     t.index ["question_id"], name: "index_comments_on_question_id"
     t.index ["site_id"], name: "index_comments_on_site_id"
+  end
+
+  create_table "evaluation_newsletters", force: :cascade do |t|
+    t.bigint "newsletter_id", null: false
+    t.integer "response_counter"
+    t.string "content_type"
+    t.string "content_detail"
+    t.string "user_response_type"
+    t.string "user_response_detail"
+    t.string "event_identifier"
+    t.datetime "action_datetime"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["newsletter_id"], name: "index_evaluation_newsletters_on_newsletter_id"
+  end
+
+  create_table "newsletter_sections", force: :cascade do |t|
+    t.bigint "newsletter_id", null: false
+    t.string "name"
+    t.string "content_type"
+    t.text "description"
+    t.integer "content_ids", array: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["newsletter_id"], name: "index_newsletter_sections_on_newsletter_id"
+  end
+
+  create_table "newsletters", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_newsletters_on_user_id"
   end
 
   create_table "question_tags", force: :cascade do |t|
@@ -191,6 +223,9 @@ ActiveRecord::Schema.define(version: 20171016191453) do
   add_foreign_key "answers", "questions"
   add_foreign_key "answers", "users", column: "owner_id"
   add_foreign_key "comments", "users", column: "owner_id"
+  add_foreign_key "evaluation_newsletters", "newsletters"
+  add_foreign_key "newsletter_sections", "newsletters"
+  add_foreign_key "newsletters", "users"
   add_foreign_key "question_tags", "questions"
   add_foreign_key "question_tags", "tags"
   add_foreign_key "questions", "users", column: "owner_id"
