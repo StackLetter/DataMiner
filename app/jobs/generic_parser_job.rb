@@ -43,11 +43,14 @@ class GenericParserJob < ApplicationJob
   private
 
   def process_model_parsing(model, ids, page_size, site_id, query_params)
+    access_token = available_token
+    return unless access_token
     page = 1
     has_more = true
     site = Site.enabled.select {|site| site.id == site_id}.first
     site_url = Api.build_stack_api_url(model, ids,
-                                       {key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api}.merge(query_params))
+                                       {key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, access_token: access_token}.merge(query_params))
+
     loop do
       begin
         response = JSON.parse RestClient.get(site_url.to_s)
@@ -58,12 +61,14 @@ class GenericParserJob < ApplicationJob
 
       model.constantize.process_json_items response['items'], site_id
 
+      access_token = next_token(access_token) if response['quota_remaining'].to_i <= 2
+      return unless access_token
       response['has_more'] == false ? has_more = false : page += 1
       sleep(response['backoff'].to_i + 1) if response['backoff']
       break unless has_more
 
       site_url = Api.build_stack_api_url(model, ids,
-                                         {key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api}.merge(query_params))
+                                         {key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, access_token: access_token}.merge(query_params))
     end
   end
 

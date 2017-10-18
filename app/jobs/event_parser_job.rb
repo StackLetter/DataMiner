@@ -5,13 +5,16 @@ class EventParserJob < ApplicationJob
   VALID_POST_TYPES = ['question', 'answer']
 
   def perform
+    access_token = available_token
+    return unless access_token
+
     Site.enabled.each do |site|
       page = 1
       page_size = 100
       has_more = true
       questions, answers, comments, users, posts = [], [], [], [], []
       site_url = Api.build_stack_api_url('Event', nil,
-                                         key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 15, access_token: ENV['base_access_token'])
+                                         key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 15, access_token: access_token)
       loop do
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
@@ -37,12 +40,14 @@ class EventParserJob < ApplicationJob
           end
         end
 
+        access_token = next_token(access_token) if response['quota_remaining'].to_i <= 2
+        return unless access_token
         response['has_more'] == false ? has_more = false : page += 1
         sleep(response['backoff'].to_i + 1) if response['backoff']
         break unless has_more
 
         site_url = Api.build_stack_api_url('Event', nil,
-                                           key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 0, access_token: ENV['base_access_token'])
+                                           key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 0, access_token: access_token)
       end
 
       if posts.size > 0
@@ -61,6 +66,9 @@ class EventParserJob < ApplicationJob
   private
 
   def process_post_edited(ids, site, page_size)
+    access_token = available_token
+    return unless access_token
+
     chunk = 100
     to_return = {answers: [], questions: []}
 
@@ -69,7 +77,7 @@ class EventParserJob < ApplicationJob
       has_more = true
       page = 1
       site_url = Api.build_stack_api_url('Post', chunk,
-                                         key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 15, order: :desc, sort: :creation, access_token: ENV['base_access_token'])
+                                         key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 15, order: :desc, sort: :creation, access_token: access_token)
       loop do
         begin
           response = JSON.parse RestClient.get(site_url.to_s)
@@ -89,12 +97,14 @@ class EventParserJob < ApplicationJob
           end
         end
 
+        access_token = next_token(access_token) if response['quota_remaining'].to_i <= 2
+        return unless access_token
         response['has_more'] == false ? has_more = false : page += 1
         sleep(response['backoff'].to_i + 1) if response['backoff']
         break unless has_more
 
         site_url = Api.build_stack_api_url('Post', chunk,
-                                           key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 15, order: :desc, sort: :creation, access_token: ENV['base_access_token'])
+                                           key: ENV['SE_api_key'], filter: ENV['SE_filter'], pagesize: page_size, page: page, site: site.api, since: 15, order: :desc, sort: :creation, access_token: access_token)
       end
     end
 
