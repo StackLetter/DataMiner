@@ -7,3 +7,8 @@ event_parser:
   cron: '*/12 * * * *'
   class: 'EventParserJob'
   queue: 'data_mining'
+
+token_reset:
+  cron: '0 6 * * *'
+  class: 'TokenResetJob'
+  queue: 'default'
