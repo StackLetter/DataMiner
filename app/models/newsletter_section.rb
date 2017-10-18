@@ -1,0 +1,2 @@
+class NewsletterSection < ApplicationRecord
+end
