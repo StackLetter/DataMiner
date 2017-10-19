@@ -1,8 +1,10 @@
 class EvaluationNewsletter < ApplicationRecord
 
-  USER_RESPONSE = ['open', 'like', 'stars', 'click']
-  USER_RESPONE_DETAIL = ['1', '2', '3', '4', '5']
-  CONTENT_TYPE = ['question', 'answer', 'badge', 'user_badge', 'comment', 'section', 'structure', 'newsletter']
+  belongs_to :newsletter
+
+  USER_RESPONSE = ['open', 'feedback', 'click', 'unsubscribe']
+  USER_RESPONE_DETAIL = ['-1', '0', '1']
+  CONTENT_TYPE = ['question', 'answer', 'badge', 'user_badge', 'comment', 'section', 'newsletter']
 
   validates :content_type, inclusion: CONTENT_TYPE
   validates :user_response_type, inclusion: USER_RESPONSE
