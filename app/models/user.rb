@@ -16,4 +16,10 @@ class User < ApplicationRecord
     return self.find_by(external_id: api_item_response['user_id']) if api_item_response['user_id']
     nil
   end
+
+  protected
+
+  def translate_html_entities
+    self.display_name = $html_entities.decode(self.display_name)
+  end
 end

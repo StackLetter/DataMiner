@@ -12,6 +12,12 @@ class Answer < ApplicationRecord
 
   before_save :update_question
 
+  protected
+
+  def translate_html_entities
+    self.body = $html_entities.decode(self.body)
+  end
+
   private
 
   def update_question

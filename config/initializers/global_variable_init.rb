@@ -7,3 +7,5 @@ $api = JSON.parse api
 $api = $api.deep_symbolize_keys
 
 $error_reporter = ::Rails.application.config.error_reporter.constantize.new
+
+$html_entities = HTMLEntities.new

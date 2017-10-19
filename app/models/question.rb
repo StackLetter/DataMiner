@@ -12,6 +12,13 @@ class Question < ApplicationRecord
 
   after_commit :accepted_answer_exists?
 
+  protected
+
+  def translate_html_entities
+    self.body = $html_entities.decode(self.body)
+    self.title = $html_entities.decode(self.title)
+  end
+
   private
 
   def accepted_answer_exists?

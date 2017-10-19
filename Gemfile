@@ -21,6 +21,8 @@ gem 'redis', '~> 3.0'
 gem 'rest-client'
 gem 'graphql'
 
+gem 'htmlentities'
+
 gem 'figaro'
 
 #gem 'sass-rails', '~> 5.0'

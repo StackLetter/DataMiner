@@ -28,6 +28,12 @@ class Comment < ApplicationRecord
     end
   end
 
+  protected
+
+  def translate_html_entities
+    self.body = $html_entities.decode(self.body)
+  end
+
   private
 
   # solve question_id and answer_id problem
