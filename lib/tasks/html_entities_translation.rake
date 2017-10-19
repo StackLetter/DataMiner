@@ -1,32 +1,57 @@
 namespace :html_entities do
   task :translate_all => :environment do
 
-    ActiveRecord::Base.transaction do
-      User.find_in_batches do |users|
+    count = User.count
+    counter = 0
+    User.find_in_batches do |users|
+      ActiveRecord::Base.transaction do
         users.each do |user|
-          user.update(display_name: $html_entities.decode(user.display_name))
+          user.save
         end
       end
-
-      Answer.find_in_batches do |answers|
-        answers.each do |answer|
-          answer.update(body: $html_entities.decode(answer.body))
-        end
-      end
-
-      Question.find_in_batches do |questions|
-        questions.each do |question|
-          question.update(body: $html_entities.decode(question.body))
-          question.update(title: $html_entities.decode(question.title))
-        end
-      end
-
-      Comment.find_in_batches do |comments|
-        comments.each do |comment|
-          comment.update(body: $html_entities.decode(comment.body))
-        end
-      end
+      counter += users.size
+      print("Processed #{counter} of #{count} Users... \r")
     end
+    puts ''
+
+    count = Answer.count
+    counter = 0
+    Answer.find_in_batches do |answers|
+      ActiveRecord::Base.transaction do
+        answers.each do |answer|
+          answer.save
+        end
+      end
+      counter += answers.size
+      print("Processed #{counter} of #{count} Answers... \r")
+    end
+    puts ''
+
+    count = Question.count
+    counter = 0
+    Question.find_in_batches do |questions|
+      ActiveRecord::Base.transaction do
+        questions.each do |question|
+          question.save
+        end
+      end
+      counter += questions.size
+      print("Processed #{counter} of #{count} Questions... \r")
+    end
+    puts ''
+
+    count = Comment.count
+    counter = 0
+    Comment.find_in_batches do |comments|
+      ActiveRecord::Base.transaction do
+        comments.each do |comment|
+          comment.save
+        end
+      end
+      counter += comments.size
+      print("Processed #{counter} of #{count} Comments... \r")
+    end
+    puts ''
 
   end
 end
