@@ -56,7 +56,7 @@ class GenericParserJob < ApplicationJob
         response = JSON.parse RestClient.get(site_url.to_s)
       rescue Exception => e
         ErrorReporter.report(:error, e, "#{klass_error_msg} - #{model}(ids: #{ids.to_s}) --- #{site_url.to_s}", response: response)
-        return
+        raise
       end
 
       model.constantize.process_json_items response['items'], site_id

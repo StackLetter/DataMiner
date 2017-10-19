@@ -20,7 +20,7 @@ class EventParserJob < ApplicationJob
           response = JSON.parse RestClient.get(site_url.to_s)
         rescue Exception => e
           ErrorReporter.report(:error, e, "#{klass_error_msg} - Event(ids: all) --- #{site_url.to_s}",  response: response)
-          return
+          raise
         end
         response['items'].each do |item|
           next unless VALID_EVENT_TYPES.include? item['event_type']
@@ -52,6 +52,11 @@ class EventParserJob < ApplicationJob
 
       if posts.size > 0
         posts = process_post_edited(posts, site, page_size)
+        if posts[:errors].size > 0
+          sleep(5)
+          posts = process_post_edited(posts, site, page_size)
+          raise if posts[:errors].size > 0
+        end
         answers = answers + posts[:answers]
         questions = questions + posts[:questions]
       end
@@ -70,7 +75,7 @@ class EventParserJob < ApplicationJob
     return unless access_token
 
     chunk = 100
-    to_return = {answers: [], questions: []}
+    to_return = {answers: [], questions: [], errors: []}
 
     ids.each_slice(chunk).each do |chunk|
       chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
@@ -83,6 +88,7 @@ class EventParserJob < ApplicationJob
           response = JSON.parse RestClient.get(site_url.to_s)
         rescue Exception => e
           ErrorReporter.report(:error, e, "#{klass_error_msg} - Post(ids: #{ids.to_s}) --- #{site_url.to_s}", response: response)
+          to_return[:errors] << e
           return to_return
         end
         response['items'].each do |item|
