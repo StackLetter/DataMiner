@@ -25,6 +25,6 @@ class EvaluationController < ApplicationController
       ErrorReporter.report(:error, e, "#{klass_error_msg} - Error saving Evaluation model to DB!")
     end
 
-    params['redirect_to'] ? redirect_to(params['redirect_to']) : head(200)
+    params['redirect_to'] ? redirect_to(URI.decode(params['redirect_to'])) : head(200)
   end
 end
