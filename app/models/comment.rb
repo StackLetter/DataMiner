@@ -28,6 +28,12 @@ class Comment < ApplicationRecord
     end
   end
 
+  def post
+    return self.question if self.question_id
+    return self.answer if self.answer_id
+    nil
+  end
+
   protected
 
   def translate_html_entities
