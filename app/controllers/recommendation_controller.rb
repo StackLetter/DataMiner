@@ -37,10 +37,10 @@ class RecommendationController < ApplicationController
   def top_new_questions
     head 400 if !@user
 
-    @questions = Question.joins(:question_tags).where('questions.creation_date > ?', @from_date)
-    @questions.where(question_tags: {tag_id: @tags}) unless @tags.empty?
+    @questions = @tags.empty? ? nil : Question.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.where('questions.creation_date > ?', @from_date) unless @questions
     @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
-    @questions = @questions.order(creation_date: :desc).limit(QUERY_LIMIT)
+    @questions = @questions.distinct.order(creation_date: :desc).limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
@@ -58,10 +58,10 @@ class RecommendationController < ApplicationController
   def greatest_hits
     head 400 if !@user
 
-    @questions = Question.joins(:question_tags).where('questions.creation_date > ?', @from_date)
+    @questions = @tags.empty? ? nil : Question.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.where('questions.creation_date > ?', @from_date) unless @questions
     @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
-    @questions = @questions.where(question_tags: {tag_id: @tags}) unless @tags.empty?
-    @questions = @questions.order(score: :desc).limit(QUERY_LIMIT)
+    @questions = @questions.distinct.order(score: :desc).limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
@@ -79,12 +79,12 @@ class RecommendationController < ApplicationController
   def answer_these
     head 400 if !@user
 
-    @questions = Question.includes(:answers).joins(:question_tags)
-                     .where('questions.creation_date > ?', @from_date)
-                     .order('RANDOM()')
+    @questions = @tags.empty? ? nil : Question.includes(:answers).joins(:question_tags)
+                                          .where('questions.creation_date > ?', @from_date)
+                                          .where(question_tags: {tag_id: @tags}) unless @tags.empty?
+    @questions = Question.where('questions.creation_date > ?', @from_date) unless @questions
     @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
-    @questions = @questions.where(question_tags: {tag_id: @tags}) unless @tags.empty?
-    @questions = @questions.select {|q| q.answers.size == 0}[0...QUERY_LIMIT]
+    @questions = @questions.distinct.shuffle.select {|q| q.answers.size == 0}[0...QUERY_LIMIT]
 
     complement = []
     if @questions.size < QUERY_LIMIT
