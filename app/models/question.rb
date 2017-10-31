@@ -10,6 +10,8 @@ class Question < ApplicationRecord
   has_many :tags, through: :question_tags
   has_many :comments, dependent: :destroy
 
+  scope :existing, -> { where('questions.removed IS NULL') }
+
   after_commit :accepted_answer_exists?
 
   protected
