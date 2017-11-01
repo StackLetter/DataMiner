@@ -19,6 +19,10 @@ class User < ApplicationRecord
     nil
   end
 
+  def without_activity
+    self.answers.size == 0 && self.comments.size == 0 && self.questions.size == 0 && self.user_badges.size == 0
+  end
+
   protected
 
   def translate_html_entities
