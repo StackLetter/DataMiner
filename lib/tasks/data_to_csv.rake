@@ -37,7 +37,8 @@ namespace :user_segmentation do
                 if !scores.empty? && scores.uniq != [0]
                   mean = scores.mean
                   std_dev = scores.standard_deviation
-                  (answer.score - mean) / std_dev
+                  result = (answer.score - mean) / std_dev
+                  (result.nan? ? 0 : result)
                 else
                   0
                 end
@@ -51,7 +52,8 @@ namespace :user_segmentation do
                 if !scores.empty? && scores.uniq != [0]
                   mean = scores.mean
                   std_dev = scores.standard_deviation
-                  (comment.score - mean) / std_dev
+                  result = (comment.score - mean) / std_dev
+                  (result.nan? ? 0 : result)
                 else
                   0
                 end
