@@ -12,6 +12,8 @@ class Answer < ApplicationRecord
 
   before_save :update_question
 
+  scope :existing, -> { where('answers.removed IS NULL') }
+
   protected
 
   def translate_html_entities

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171024175924) do
+ActiveRecord::Schema.define(version: 20171031231254) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -50,6 +50,7 @@ ActiveRecord::Schema.define(version: 20171024175924) do
     t.boolean "is_accepted"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "removed"
     t.index ["external_id"], name: "index_answers_on_external_id"
     t.index ["site_id"], name: "index_answers_on_site_id"
   end
@@ -81,6 +82,7 @@ ActiveRecord::Schema.define(version: 20171024175924) do
     t.string "post_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "removed"
     t.index ["answer_id"], name: "index_comments_on_answer_id"
     t.index ["external_id"], name: "index_comments_on_external_id"
     t.index ["question_id"], name: "index_comments_on_question_id"
@@ -149,6 +151,7 @@ ActiveRecord::Schema.define(version: 20171024175924) do
     t.boolean "is_answered"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "removed"
     t.index ["external_id"], name: "index_questions_on_external_id"
     t.index ["site_id"], name: "index_questions_on_site_id"
   end
@@ -215,6 +218,7 @@ ActiveRecord::Schema.define(version: 20171024175924) do
     t.boolean "is_employee"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.boolean "removed"
     t.index ["external_id"], name: "index_users_on_external_id"
     t.index ["id"], name: "index_users_on_id"
   end

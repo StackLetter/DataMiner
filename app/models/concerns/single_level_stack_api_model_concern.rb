@@ -21,7 +21,7 @@ module SingleLevelStackApiModelConcern
     validates :external_id, presence: true, if: Proc.new {|object| !NOT_VALIDATE_EXTERNAL.include?(object.class.name.downcase)}
     validates :site_id, presence: true, if: Proc.new {|object| !NOT_VALIDATE_SITE.include?(object.class.name.downcase)}
 
-    self::API_ATTRIBUTES = self.column_names.select {|column| !['created_at', 'updated_at', 'id', 'external_id', 'site_id', 'account_id'].include?(column)}
+    self::API_ATTRIBUTES = self.column_names.select {|column| !['created_at', 'updated_at', 'id', 'external_id', 'site_id', 'account_id', 'removed'].include?(column)}
 
     def self.process_json_items(items, site_id)
       self.transaction do

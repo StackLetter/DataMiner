@@ -5,6 +5,8 @@ class Comment < ApplicationRecord
   belongs_to :question, required: false
   belongs_to :owner, class_name: 'User', optional: true
 
+  scope :existing, -> { where('comments.removed IS NULL') }
+
   attr_accessor :post_id, :post
 
   validate :one_foreign_key

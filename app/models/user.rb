@@ -11,6 +11,8 @@ class User < ApplicationRecord
   has_many :answers, dependent: :destroy, foreign_key: :owner_id
   has_many :comments, dependent: :destroy, foreign_key: :owner_id
 
+  scope :existing, -> { where('users.removed IS NULL') }
+
   def self.find_model_object(api_item_response)
     return self.find_by(external_id: api_item_response['external_id']) if api_item_response['external_id']
     return self.find_by(external_id: api_item_response['user_id']) if api_item_response['user_id']

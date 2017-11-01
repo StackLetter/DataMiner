@@ -40,7 +40,7 @@ class GenericParserJob < ApplicationJob
     end
   end
 
-  private
+  protected
 
   def process_model_parsing(model, ids, page_size, site_id, query_params)
     access_token = available_token
