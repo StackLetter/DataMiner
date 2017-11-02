@@ -2,6 +2,7 @@ class Question < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include ApiTagsIncludedConcern
   include OwnerValidationConcern
+  include SiteIdScopedConcern
 
   belongs_to :owner, class_name: 'User', optional: true
   has_many :answers, dependent: :destroy

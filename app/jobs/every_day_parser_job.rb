@@ -7,7 +7,7 @@ class EveryDayParserJob < ApplicationJob
       GenericParserJob.perform_later('Tag', 'new', site.id)
       GenericParserJob.perform_later('UserBadge', 'new', site.id)
 
-      users = User.includes(:user_tags).where('account_id IS NOT NULL').where(site_id: site.id)
+      users = User.for_site(site.id).includes(:user_tags).where('account_id IS NOT NULL')
       users_without_tags = users.select{ |user| user.user_tags.size == 0 }.map(&:id)
       user_with_tags = users.select{ |user| user.user_tags.size > 0 }.map(&:id)
       UserTagParserJob.perform_later('all', site.id, users_without_tags) unless users_without_tags.empty?
