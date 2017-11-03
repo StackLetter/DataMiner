@@ -2,18 +2,21 @@
   "enabled": true,
   "id": 1,
   "api": "softwareengineering",
-  "name": "Software Engineering Stack Exchange"
+  "name": "Software Engineering Stack Exchange",
+  "url": "https://softwareengineering.stackexchange.com"
   },
   "mathematics": {
     "enabled": false,
     "id": 2,
     "api": "math",
-    "name": "Mathematics Stack Exchange"
+    "name": "Mathematics Stack Exchange",
+    "url": "https://math.stackexchange.com"
   },
   "stack_overflow": {
-    "enabled": false,
+    "enabled": true,
     "id": 3,
     "api": "stackoverflow",
-    "name": "Stack Overflow"
+    "name": "Stack Overflow",
+    "url": "https://stackoverflow.com"
   }
 }

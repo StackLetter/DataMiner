@@ -30,7 +30,7 @@ module SingleLevelStackApiModelConcern
           data = self::API_ATTRIBUTES.reduce({}) do |hash, key|
             hash[key] = DateTime.strptime(item[key].to_s, '%s') if key.include?('date') && item[key]
             if (key.end_with?('_id') && item[key]) || (key.start_with?('owner') && item['owner'].try(:[], 'user_id'))
-              some_instance = SingleLevelStackApiModelConcern.name_map(key.split('_')[-2].camelize, item['post_type']).constantize.find_by(external_id: item[key])
+              some_instance = SingleLevelStackApiModelConcern.name_map(key.split('_')[-2].camelize, item['post_type']).constantize.find_by(external_id: item[key], site_id: site_id)
               hash[key] = some_instance ? some_instance.id : item[key]
               hash[key] = item['owner'].try(:[], 'user_id') if key.start_with?('owner')
             end
@@ -42,9 +42,9 @@ module SingleLevelStackApiModelConcern
           data['site_id'] = site_id
 
           # two options, some models (Tag) has no ID in StackExchange API
-          model = self.find_or_initialize_by(external_id: data['external_id'])
-          model = self.find_or_initialize_by(name: data['name']) unless model
-
+          model = nil
+          model = self.where(site_id: site_id).find_or_initialize_by(external_id: data['external_id']) unless self == Tag
+          model = self.where(site_id: site_id).find_or_initialize_by(name: data['name']) if self == Tag
           db_owner_id = User.find_by(external_id: item['owner'].try(:[], 'user_id')).try(:id)
           data = data.merge('owner_id': db_owner_id) if model.respond_to?(:owner_id) && db_owner_id
           model.assign_attributes(data)
