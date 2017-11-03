@@ -9,6 +9,9 @@ class EventParserJob < ApplicationJob
     return unless access_token
 
     Site.enabled.each do |site|
+      # TODO remove ater SO dump
+      next if site.id == 3
+      # ---
       page = 1
       page_size = 100
       has_more = true

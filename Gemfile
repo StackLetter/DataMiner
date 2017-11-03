@@ -25,11 +25,9 @@ gem 'htmlentities'
 
 gem 'figaro'
 
-#gem 'sass-rails', '~> 5.0'
-#gem 'uglifier', '>= 1.3.0'
-#gem 'turbolinks', '~> 5'
-#gem 'jbuilder', '~> 2.5'
-
+gem 'uglifier', '>= 1.3.0'
+gem 'execjs'
+gem 'therubyracer'
 # gem 'capistrano-rails', group: :development
 
 group :development, :test do
