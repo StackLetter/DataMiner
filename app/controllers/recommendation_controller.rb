@@ -10,7 +10,7 @@ class RecommendationController < ApplicationController
 
     top_new_questions = {
         content_type: 'question',
-        name: "Top new questions this",
+        name: "Top new questions",
         description: 'These questions are selected based on your activity in various tags and on their creation date.',
         limit: limit,
         content_endpoint: URI.unescape(top_new_questions_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
