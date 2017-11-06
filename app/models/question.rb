@@ -25,6 +25,6 @@ class Question < ApplicationRecord
   private
 
   def accepted_answer_exists?
-    GenericParserJob.perform_later('Answer', [self.accepted_answer_id], self.site_id) unless Answer.exists?(external_id: self.accepted_answer_id)
+    GenericParserJob.perform_later('Answer', [self.accepted_answer_id], self.site_id) if self.accepted_answer_id && !Answer.exists?(external_id: self.accepted_answer_id)
   end
 end

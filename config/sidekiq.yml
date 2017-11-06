@@ -3,7 +3,9 @@
 :queues:
   - default
   - data_mining
+  - new_user
 
 :limits:
-    default: 4
+    default: 2
     data_mining: 1
+    new_user: 2
