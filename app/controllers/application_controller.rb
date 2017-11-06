@@ -24,7 +24,7 @@ class ApplicationController < ActionController::Base
       raise
     end
     existing_ids = response['items'].map {|item| item["#{type.downcase}_id"]}
-    (ids - existing_ids).each { |id| type.constantize.find_by(external_id: id, site_id: site.id).update(removed: true) }
+    (ids - existing_ids).each { |id| type.constantize.find_by(external_id: id, site_id: site.id)&.update(removed: true) }
 
     objects.select { |o| existing_ids.include? o.external_id }.map(&:id)
   end

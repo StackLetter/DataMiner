@@ -5,8 +5,10 @@ class GenericParserJob < ApplicationJob
     chunk_size = 100 # max 100
     page_size = 100
 
-    # Update and create in once
+    # Update and create at once UNLESS one model query exist in DB
     if method_or_ids.is_a?(Array)
+      return if method_or_ids.size == 1 && method_or_ids[0] == nil && model.constantize.exists?(method_or_ids[0].to_i)
+
       method_or_ids.each_slice(chunk_size).each do |chunk|
         return if chunk.first == nil
         chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)

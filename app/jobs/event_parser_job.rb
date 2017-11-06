@@ -9,9 +9,6 @@ class EventParserJob < ApplicationJob
     return unless access_token
 
     Site.enabled.each do |site|
-      # TODO remove ater SO dump
-      next if site.id == 3
-      # ---
       page = 1
       page_size = 100
       has_more = true
@@ -64,10 +61,10 @@ class EventParserJob < ApplicationJob
         questions = questions + posts[:questions]
       end
 
-      GenericParserJob.perform_later('User', users, site.id)
-      GenericParserJob.perform_later('Question', questions, site.id)
-      GenericParserJob.perform_later('Answer', answers, site.id)
-      GenericParserJob.perform_later('Comment', comments, site.id)
+      GenericParserJob.perform_later('User', users, site.id, {sort: 'creation'})
+      GenericParserJob.perform_later('Question', questions, site.id, {sort: 'creation'})
+      GenericParserJob.perform_later('Answer', answers, site.id, {sort: 'creation'})
+      GenericParserJob.perform_later('Comment', comments, site.id, {sort: 'creation'}) if site.id != 3 # TODO remove after dump of all data
     end
   end
 
