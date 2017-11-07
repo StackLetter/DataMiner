@@ -12,3 +12,8 @@ token_reset:
   cron: '0 6 * * *'
   class: 'TokenResetJob'
   queue: 'default'
+
+auth_accounts_check:
+  cron: '5 6 * * *'
+  class: 'AuthAccountsCheckJob'
+  queue: 'default'
