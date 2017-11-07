@@ -51,7 +51,7 @@ module SingleLevelStackApiModelConcern
           if model.valid?
             model.save
             model.update(data)
-            self.initialize_tags(model, item['tags']) if model.respond_to?(:load_tags_after_parsing)
+            self.initialize_tags(model, item['tags'], site_id) if model.respond_to?(:load_tags_after_parsing)
           else
             missing_models = model.errors.details.select {|_, detail| detail.select {|detail| [:not_specified, :blank].include?(detail[:error])}.size > 0}
             if missing_models.size > 0
@@ -70,8 +70,8 @@ module SingleLevelStackApiModelConcern
 
     private
 
-    def self.initialize_tags(model, tags)
-      db_tags = Tag.where(name: tags)
+    def self.initialize_tags(model, tags, site_id = 1)
+      db_tags = Tag.for_site(site_id).where(name: tags)
       model_id = model.class.name.downcase + '_id'
 
       db_tags.each do |tag|

@@ -13,6 +13,7 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy, foreign_key: :owner_id
 
   scope :existing, -> { where('users.removed IS NULL') }
+  scope :stackletter_users, -> { where('users.account_id IS NOT NULL') }
 
   def self.find_model_object(api_item_response, site_id = 1)
     return self.find_by(external_id: api_item_response['external_id'], site_id: site_id) if api_item_response['external_id']
