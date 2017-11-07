@@ -64,7 +64,7 @@ class EventParserJob < ApplicationJob
       GenericParserJob.perform_later('User', users, site.id, {sort: 'creation'})
       GenericParserJob.perform_later('Question', questions, site.id, {sort: 'creation'})
       GenericParserJob.perform_later('Answer', answers, site.id, {sort: 'creation'})
-      GenericParserJob.perform_later('Comment', comments, site.id, {sort: 'creation'}) if site.id != 3 # TODO remove after dump of all data
+      GenericParserJob.perform_later('Comment', comments, site.id, {sort: 'creation'})
     end
   end
 
