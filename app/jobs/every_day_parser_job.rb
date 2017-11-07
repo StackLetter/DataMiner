@@ -5,7 +5,9 @@ class EveryDayParserJob < ApplicationJob
     Site.enabled.each do |site|
       GenericParserJob.perform_later('Badge', 'new', site.id, {sort: 'name'})
       GenericParserJob.perform_later('Tag', 'new', site.id, {sort: 'name'})
-      GenericParserJob.perform_later('UserBadge', 'new', site.id)
+
+      users_ids = User.for_site(site.id).order('RANDOM()').limit(500000).map(&:external_id)
+      GenericParserJob.perform_later('UserBadge', users_ids, site.id)
 
       users = User.for_site(site.id).includes(:user_tags).where('account_id IS NOT NULL')
       users_without_tags = users.select{ |user| user.user_tags.size == 0 }.map(&:external_id)
