@@ -67,10 +67,7 @@ class RecommendationController < ApplicationController
 
     complement = []
     if @questions.size < QUERY_LIMIT
-      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
-                       .where('questions.creation_date > ?', (@frequency == 'd' ? 7.day.ago : 21.day.ago))
-                       .where(question_tags: {tag_id: @tags})
-                       .order(score: :desc).limit(QUERY_LIMIT - @questions.size)
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', (@frequency == 'd' ? 7.day.ago : 21.day.ago)).where(question_tags: {tag_id: @tags}).order(score: :desc).limit(QUERY_LIMIT - @questions.size)
       where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -81,22 +78,16 @@ class RecommendationController < ApplicationController
   def answer_these
     head 400 if !@user
 
-    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.includes(:answers).joins(:question_tags)
-                                          .where('questions.creation_date > ?', @from_date)
-                                          .where(question_tags: {tag_id: @tags}) unless @tags.empty?
-    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags}).where('answers.question_id IS NULL') unless @tags.empty?
+    @questions = Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').where('questions.creation_date > ?', @from_date).where('answers.question_id IS NULL') unless @questions
     @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
-    @questions = @questions.distinct.shuffle.select {|q| q.answers.size == 0}[0...QUERY_LIMIT]
+    @questions = @questions.order('RANDOM()').limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
-      complement = Question.for_site(@user.site_id).existing.includes(:answers).joins(:question_tags)
-                       .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
-                       .order('RANDOM()')
+      complement = Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').joins(:question_tags).where('questions.creation_date > ?', @max_from_date).where(question_tags: {tag_id: @tags}).where('answers.question_id IS NULL')
       where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
-      complement = complement.where.not(id: where_not)
-      complement = complement.select {|q| q.answers.size == 0}[0...(QUERY_LIMIT - @questions.size)]
+      complement = complement.where.not(id: where_not).order('RANDOM()').limit(10)
     end
 
     render json: filter_404_content(@questions.to_a + complement.to_a, Site.find(@user.site_id))
