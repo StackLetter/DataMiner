@@ -10,8 +10,8 @@ class RecommendationController < ApplicationController
 
     top_new_questions = {
         content_type: 'question',
-        name: "Top new questions",
-        description: 'These questions are selected based on your activity in various tags and on their creation date.',
+        name: 'Top new questions',
+        description: 'The most interesting questions selected by your activity in various tags and their creation date.',
         limit: limit,
         content_endpoint: URI.unescape(top_new_questions_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
     }
@@ -19,7 +19,7 @@ class RecommendationController < ApplicationController
     greatest_hits = {
         content_type: 'question',
         name: "Greatest hits from previous #{daily ? 'week' : 'weeks'}",
-        description: 'These questions are selected based on your activity in various tags and on their score.',
+        description: 'Valuable questions from the last week selected by your activity in various tags and their score.',
         limit: limit,
         content_endpoint: URI.unescape(greatest_hits_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
     }
@@ -27,7 +27,7 @@ class RecommendationController < ApplicationController
     answer_these = {
         content_type: 'question',
         name: 'Can you answer these?',
-        description: 'These questions are selected based on your activity in various tags for questions without answers.',
+        description: 'Unanswered questions selected by your activity in various tags.',
         limit: limit,
         content_endpoint: URI.unescape(answer_these_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
     }
