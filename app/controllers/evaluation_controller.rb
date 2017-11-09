@@ -13,7 +13,7 @@ class EvaluationController < ApplicationController
             response_counter: 1,
             action_datetime: DateTime.now,
             user_response_type: params['user_response_type'].try(:to_s),
-            user_response_detail: params['user_response_details'].try(:to_s),
+            user_response_detail: params['user_response_detail'].try(:to_s),
             content_type: params['content_type'].try(:to_s),
             content_detail: params['content_detail'].try(:to_s),
             event_identifier: params['event_identifier']
