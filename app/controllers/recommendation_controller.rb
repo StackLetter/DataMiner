@@ -41,7 +41,7 @@ class RecommendationController < ApplicationController
 
     @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
     @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
-    @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
     @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
@@ -50,7 +50,7 @@ class RecommendationController < ApplicationController
                        .where('questions.creation_date > ?', @max_from_date)
                        .where(question_tags: {tag_id: @tags})
                        .order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT - @questions.size)
-      where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
 
@@ -62,13 +62,13 @@ class RecommendationController < ApplicationController
 
     @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
     @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
-    @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
     @questions = @questions.distinct.order(score: :desc).limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
       complement = Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', (@frequency == 'd' ? 7.day.ago : 21.day.ago)).where(question_tags: {tag_id: @tags}).order(score: :desc).limit(QUERY_LIMIT - @questions.size)
-      where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
 
@@ -80,13 +80,13 @@ class RecommendationController < ApplicationController
 
     @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags}).where('answers.question_id IS NULL') unless @tags.empty?
     @questions = Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').where('questions.creation_date > ?', @from_date).where('answers.question_id IS NULL') unless @questions
-    @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
     @questions = @questions.order('RANDOM()').limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
       complement = Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').joins(:question_tags).where('questions.creation_date > ?', @max_from_date).where(question_tags: {tag_id: @tags}).where('answers.question_id IS NULL')
-      where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not).order('RANDOM()').limit(10)
     end
 
@@ -102,7 +102,7 @@ class RecommendationController < ApplicationController
     @from_date = @frequency == 'd' ? 1.day.ago : 7.day.ago
     @max_from_date = @frequency == 'd' ? 7.day.ago : 21.day.ago
 
-    @duplicates = recommendation_params[:duplicates] ? JSON.parse(URI.decode(recommendation_params[:duplicates])).symbolize_keys : {}
+    @duplicates = recommendation_params[:duplicates] ? JSON.parse(URI.decode(recommendation_params[:duplicates])).deep_symbolize_keys : {}
 
     @tags = @user.user_tags.map(&:tag_id)
     @tags << @user.questions.map {|q| q.question_tags.map(&:tag_id)}
