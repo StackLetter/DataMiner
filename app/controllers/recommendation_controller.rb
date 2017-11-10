@@ -42,14 +42,14 @@ class RecommendationController < ApplicationController
     @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
     @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
     @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
-    @questions = @questions.distinct.order(creation_date: :asc, score: :desc).limit(QUERY_LIMIT)
+    @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
       complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
                        .where('questions.creation_date > ?', @max_from_date)
                        .where(question_tags: {tag_id: @tags})
-                       .order(creation_date: :asc, score: :desc).limit(QUERY_LIMIT - @questions.size)
+                       .order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT - @questions.size)
       where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
