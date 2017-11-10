@@ -21,7 +21,7 @@ module SingleLevelStackApiModelConcern
     validates :external_id, presence: true, if: Proc.new {|object| !NOT_VALIDATE_EXTERNAL.include?(object.class.name.downcase)}
     validates :site_id, presence: true, if: Proc.new {|object| !NOT_VALIDATE_SITE.include?(object.class.name.downcase)}
 
-    self::API_ATTRIBUTES = self.column_names.select {|column| !['created_at', 'updated_at', 'id', 'external_id', 'site_id', 'account_id', 'removed'].include?(column)}
+    self::API_ATTRIBUTES = self.column_names.select {|column| !['created_at', 'updated_at', 'id', 'external_id', 'site_id', 'account_id', 'removed', 'accepted_answer_external_id'].include?(column)}
 
     def self.process_json_items(items, site_id)
       self.transaction do
@@ -45,8 +45,12 @@ module SingleLevelStackApiModelConcern
           model = nil
           model = self.where(site_id: site_id).find_or_initialize_by(external_id: data['external_id']) unless self == Tag
           model = self.where(site_id: site_id).find_or_initialize_by(name: data['name']) if self == Tag
+
           db_owner_id = User.find_by(external_id: item['owner'].try(:[], 'user_id')).try(:id)
           data = data.merge('owner_id': db_owner_id) if model.respond_to?(:owner_id) && db_owner_id
+          # Hotfix bug - accepted_answer_id 10.11.2017
+          data['accepted_answer_external_id'] = item['accepted_answer_id'] if self == Question
+
           model.assign_attributes(data)
           if model.valid?
             model.save
