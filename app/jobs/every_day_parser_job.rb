@@ -6,7 +6,7 @@ class EveryDayParserJob < ApplicationJob
       GenericParserJob.perform_later('Badge', 'new', site.id, {sort: 'name'})
       GenericParserJob.perform_later('Tag', 'new', site.id, {sort: 'name'})
 
-      users_ids = User.for_site(site.id).order('RANDOM()').limit(500000).map(&:external_id)
+      users_ids = User.for_site(site.id).order('RANDOM()').limit(50000).map(&:external_id)
       users_ids.each_slice(100) {|ids| GenericParserJob.perform_later('UserBadge', ids, site.id)}
 
       users = User.for_site(site.id).includes(:user_tags).where('account_id IS NOT NULL')
