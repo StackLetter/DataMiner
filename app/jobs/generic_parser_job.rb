@@ -5,8 +5,10 @@ class GenericParserJob < ApplicationJob
     chunk_size = 100 # max 100
     page_size = 100
 
-    # Update and create in once
+    # Update and create at once UNLESS one model query exist in DB
     if method_or_ids.is_a?(Array)
+      return if method_or_ids.size == 1 && method_or_ids[0] == nil && model.constantize.exists?(method_or_ids[0].to_i)
+
       method_or_ids.each_slice(chunk_size).each do |chunk|
         return if chunk.first == nil
         chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
@@ -14,9 +16,8 @@ class GenericParserJob < ApplicationJob
       end
     end
 
-    # TODO site_id zohladnit
     if method_or_ids == 'update_all'
-      ids = model.constantize.all.map(&:external_id)
+      ids = model.constantize.all.for_site(site_id).map(&:external_id)
       ids.each_slice(chunk_size).each do |chunk|
         chunk = chunk.map {|items| items.values}.flatten if chunk.first.try(:is_a?, Hash)
         process_model_parsing(model, chunk, page_size, site_id, query_params)
@@ -24,11 +25,11 @@ class GenericParserJob < ApplicationJob
     end
 
     if method_or_ids == 'new' || method_or_ids == 'all'
-      models_since = model.constantize.order(created_at: :desc).limit(1).first
+      models_since = model.constantize.for_site(site_id).order(created_at: :desc).limit(1).first
       models_since = (models_since && method_or_ids ==  'new') ? models_since.created_at.strftime('%s') : DateTime.new(1970).strftime('%s')
 
       models = model.underscore.split('_')
-      ids = models.size > 1 ? models[0].capitalize.constantize.all.map(&:external_id) : nil
+      ids = models.size > 1 ? models[0].capitalize.constantize.all.for_site(site_id).map(&:external_id) : nil
 
       if ids
         ids.each_slice(chunk_size) do |chunk|

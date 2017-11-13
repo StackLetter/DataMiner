@@ -5,13 +5,13 @@ class RecommendationController < ApplicationController
   QUERY_LIMIT = 10
 
   def index
-    daily = recommendation_params[:frequency] == 'd'
+    daily = @frequency == 'd'
     limit = daily ? 2 : 5
 
     top_new_questions = {
         content_type: 'question',
-        name: "Top new questions this #{daily ? 'day' : 'week'}",
-        description: 'These questions are selected based on your activity in various tags.',
+        name: 'Top new questions',
+        description: 'The most interesting questions selected by your activity in various tags and their creation date.',
         limit: limit,
         content_endpoint: URI.unescape(top_new_questions_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
     }
@@ -19,7 +19,7 @@ class RecommendationController < ApplicationController
     greatest_hits = {
         content_type: 'question',
         name: "Greatest hits from previous #{daily ? 'week' : 'weeks'}",
-        description: 'These questions are selected based on your activity in various tags.',
+        description: 'Valuable questions from the last week selected by your activity in various tags and their score.',
         limit: limit,
         content_endpoint: URI.unescape(greatest_hits_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
     }
@@ -27,7 +27,7 @@ class RecommendationController < ApplicationController
     answer_these = {
         content_type: 'question',
         name: 'Can you answer these?',
-        description: 'These questions are selected based on your activity in various tags.',
+        description: 'Unanswered questions selected by your activity in various tags.',
         limit: limit,
         content_endpoint: URI.unescape(answer_these_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
     }
@@ -39,18 +39,18 @@ class RecommendationController < ApplicationController
   def top_new_questions
     head 400 if !@user
 
-    @questions = @tags.empty? ? nil : Question.existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
-    @questions = Question.existing.where('questions.creation_date > ?', @from_date) unless @questions
-    @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
-    @questions = @questions.distinct.order(creation_date: :desc).limit(QUERY_LIMIT)
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
+    @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
-      complement = Question.existing.joins(:question_tags)
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
                        .where('questions.creation_date > ?', @max_from_date)
                        .where(question_tags: {tag_id: @tags})
-                       .order(creation_date: :desc).limit(QUERY_LIMIT - @questions.size)
-      where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
+                       .order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT - @questions.size)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
 
@@ -60,18 +60,15 @@ class RecommendationController < ApplicationController
   def greatest_hits
     head 400 if !@user
 
-    @questions = @tags.empty? ? nil : Question.existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
-    @questions = Question.existing.where('questions.creation_date > ?', @from_date) unless @questions
-    @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
     @questions = @questions.distinct.order(score: :desc).limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
-      complement = Question.existing.joins(:question_tags)
-                       .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
-                       .order(score: :desc).limit(QUERY_LIMIT - @questions.size)
-      where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', (@frequency == 'd' ? 7.day.ago : 21.day.ago)).where(question_tags: {tag_id: @tags}).order(score: :desc).limit(QUERY_LIMIT - @questions.size)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
 
@@ -81,22 +78,16 @@ class RecommendationController < ApplicationController
   def answer_these
     head 400 if !@user
 
-    @questions = @tags.empty? ? nil : Question.existing.includes(:answers).joins(:question_tags)
-                                          .where('questions.creation_date > ?', @from_date)
-                                          .where(question_tags: {tag_id: @tags}) unless @tags.empty?
-    @questions = Question.existing.where('questions.creation_date > ?', @from_date) unless @questions
-    @questions = @questions.where.not(id: @duplicates[:questions]) if @duplicates[:questions]
-    @questions = @questions.distinct.shuffle.select {|q| q.answers.size == 0}[0...QUERY_LIMIT]
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags}).where('answers.question_id IS NULL') unless @tags.empty?
+    @questions = Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').where('questions.creation_date > ?', @from_date).where('answers.question_id IS NULL') unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
+    @questions = @questions.order('RANDOM()').limit(QUERY_LIMIT)
 
     complement = []
     if @questions.size < QUERY_LIMIT
-      complement = Question.existing.includes(:answers).joins(:question_tags)
-                       .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
-                       .order('RANDOM()')
-      where_not = @duplicates[:questions] ? @questions.map(&:id) + @duplicates[:questions] : @questions.map(&:id)
-      complement = complement.where.not(id: where_not)
-      complement = complement.select {|q| q.answers.size == 0}[0...(QUERY_LIMIT - @questions.size)]
+      complement = Question.for_site(@user.site_id).existing.joins('LEFT JOIN answers ON questions.id = answers.question_id').joins(:question_tags).where('questions.creation_date > ?', @max_from_date).where(question_tags: {tag_id: @tags}).where('answers.question_id IS NULL')
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
+      complement = complement.where.not(id: where_not).order('RANDOM()').limit(10)
     end
 
     render json: filter_404_content(@questions.to_a + complement.to_a, Site.find(@user.site_id))
@@ -107,10 +98,11 @@ class RecommendationController < ApplicationController
   def variables_init
     @user = User.includes(:user_tags, questions: :question_tags).find(recommendation_params[:user_id])
 
-    @from_date = recommendation_params[:frequency] == 'd' ? 1.day.ago : 7.day.ago
-    @max_from_date = recommendation_params[:frequency] == 'd' ? 7.day.ago : 21.day.ago
+    @frequency = recommendation_params[:frequency]
+    @from_date = @frequency == 'd' ? 1.day.ago : 7.day.ago
+    @max_from_date = @frequency == 'd' ? 7.day.ago : 21.day.ago
 
-    @duplicates = recommendation_params[:duplicates] ? JSON.parse(URI.decode(recommendation_params[:duplicates])).symbolize_keys : {}
+    @duplicates = recommendation_params[:duplicates] ? JSON.parse(URI.decode(recommendation_params[:duplicates])).deep_symbolize_keys : {}
 
     @tags = @user.user_tags.map(&:tag_id)
     @tags << @user.questions.map {|q| q.question_tags.map(&:tag_id)}

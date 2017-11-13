@@ -1,7 +1,7 @@
 class Api
 
   def self.build_stack_api_url(model, ids, **params)
-    sites = model.underscore.split('_').map(&:pluralize)
+    sites = model.include?('-') ? [model] : model.underscore.split('_').map(&:pluralize)
 
     path = if ids
              ['', self.stack_api_version, sites.first, ids.join(';')]

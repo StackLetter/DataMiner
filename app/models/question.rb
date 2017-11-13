@@ -2,6 +2,7 @@ class Question < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include ApiTagsIncludedConcern
   include OwnerValidationConcern
+  include SiteIdScopedConcern
 
   belongs_to :owner, class_name: 'User', optional: true
   has_many :answers, dependent: :destroy
@@ -24,6 +25,7 @@ class Question < ApplicationRecord
   private
 
   def accepted_answer_exists?
-    GenericParserJob.perform_later('Answer', [self.accepted_answer_id], self.site_id) unless Answer.exists?(external_id: self.accepted_answer_id)
+    GenericParserJob.perform_later('Answer', [self.accepted_answer_external_id], self.site_id) if self.accepted_answer_external_id &&
+        !Answer.exists?(external_id: self.accepted_answer_external_id)
   end
 end

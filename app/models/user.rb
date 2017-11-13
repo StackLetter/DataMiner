@@ -1,6 +1,7 @@
 class User < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include CustomFindsConcern
+  include SiteIdScopedConcern
 
   has_many :user_tags, dependent: :destroy
   has_many :user_badges, dependent: :destroy
@@ -10,12 +11,15 @@ class User < ApplicationRecord
   has_many :questions, dependent: :destroy, foreign_key: :owner_id
   has_many :answers, dependent: :destroy, foreign_key: :owner_id
   has_many :comments, dependent: :destroy, foreign_key: :owner_id
+  has_many :newsletters
+  has_many :evaluation_newsletters, through: :newsletters
 
   scope :existing, -> { where('users.removed IS NULL') }
+  scope :stackletter_users, -> { where('users.account_id IS NOT NULL') }
 
-  def self.find_model_object(api_item_response)
-    return self.find_by(external_id: api_item_response['external_id']) if api_item_response['external_id']
-    return self.find_by(external_id: api_item_response['user_id']) if api_item_response['user_id']
+  def self.find_model_object(api_item_response, site_id = 1)
+    return self.find_by(external_id: api_item_response['external_id'], site_id: site_id) if api_item_response['external_id']
+    return self.find_by(external_id: api_item_response['user_id'], site_id: site_id) if api_item_response['user_id']
     nil
   end
 

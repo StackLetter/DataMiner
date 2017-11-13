@@ -3,8 +3,12 @@ module DoubleLevelStackApiModelConcern
 
   included do
 
-    def self.find_model_object(api_item_response)
-      self.find_by(external_id: api_item_response['external_id'])
+    def self.for_site(*_attrs)
+      self
+    end
+
+    def self.find_model_object(api_item_response, site_id = 1)
+      self.find_by(external_id: api_item_response['external_id'], site_id: site_id)
     end
 
     def self.process_json_items(items, site_id)
@@ -18,8 +22,8 @@ module DoubleLevelStackApiModelConcern
 
       self.transaction do
         items.each do |item|
-          submodel_object = submodel_class_const.find_model_object(item[submodel] || item[submodel.pluralize] || item)
-          base_model_object = base_model_class_const.find_model_object(item[base_model] || item[submodel.pluralize] || item)
+          submodel_object = submodel_class_const.find_model_object(item[submodel] || item[submodel.pluralize] || item, site_id)
+          base_model_object = base_model_class_const.find_model_object(item[base_model] || item[submodel.pluralize] || item, site_id)
 
           # Data are not present in the Database, base_model is under higher scope then site --- impossible to detect like a human
           unless submodel_object
