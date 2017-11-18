@@ -18,18 +18,13 @@ namespace :user_segmentation do
                     answer_tags_count
                     mu_questions mu_answers mu_comments expertise satisfaction)
 
-#      TODO satisfakciu ratat v R
-#      user_reputations = random_users.map(&:reputation)
-#      min_reputation = user_reputations.min
-#      std_dev_reputation = user_reputations.standard_deviation
-
       User.for_site(site)
           .includes(:questions, :answers, :user_badges)
           .find_in_batches(batch_size: batch) do |users|
         users.each do |user|
           next if user.without_activity? || counter > 250000
 
-          row = [user.id, user.display_name, #2
+          row = [user.id, user.display_name.gsub(',', ';'), #2
                  user.questions_count, user.questions.where(is_answered: true).size, user.answers_count, user.comments.size, user.user_badges.map(&:badge_id).uniq.size, #5
                  user.user_tags.map(&:tag_id).uniq.size, #1
                  user.questions.map {|q| q.tags.map(&:name)}.flatten.uniq.size, #1
@@ -38,6 +33,7 @@ namespace :user_segmentation do
           mu_questions = user.questions_count == 0 ? 0 : user.questions.reduce(0.0) {|sum, q| sum + q.score} / user.questions_count
 
           mu_answers = 0
+          zeros = 0
           user.answers.each do |answer|
             scores = answer.question.answers&.map(&:score)
             mu_answers +=
@@ -47,12 +43,14 @@ namespace :user_segmentation do
                   result = (answer.score - mean) / std_dev
                   (result.nan? ? 0 : result)
                 else
+                  zeros += 1
                   0
                 end
           end
-          mu_answers = mu_answers / user.answers_count if user.answers_count > 0
+          mu_answers = mu_answers / (user.answers_count - zeros) if (user.answers_count - zeros) > 0
 
           mu_comments = 0
+          zeros = 0
           user.comments.each do |comment|
             scores = comment.post.comments&.map(&:score)
             mu_comments +=
@@ -62,10 +60,11 @@ namespace :user_segmentation do
                   result = (comment.score - mean) / std_dev
                   (result.nan? ? 0 : result)
                 else
+                  zeros += 1
                   0
                 end
           end
-          mu_comments = mu_comments / user.comments.size if user.comments.size > 0
+          mu_comments = mu_comments / (user.comments.size - zeros) if  (user.comments.size - zeros) > 0
 
           answered_questions = user.answers.map(&:question_id).uniq.size
           expertise = answered_questions == 0 || user.questions_count == 0 ? 0 : (answered_questions - user.questions_count).to_f / (Math.sqrt(answered_questions) + Math.sqrt(user.questions_count))

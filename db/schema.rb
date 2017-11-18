@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171110154037) do
+ActiveRecord::Schema.define(version: 20171117153546) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -52,6 +52,8 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.datetime "updated_at", null: false
     t.boolean "removed"
     t.index ["external_id"], name: "index_answers_on_external_id"
+    t.index ["owner_id"], name: "index_answers_on_owner_id"
+    t.index ["question_id"], name: "index_answers_on_question_id"
     t.index ["site_id"], name: "index_answers_on_site_id"
   end
 
@@ -85,6 +87,7 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.boolean "removed"
     t.index ["answer_id"], name: "index_comments_on_answer_id"
     t.index ["external_id"], name: "index_comments_on_external_id"
+    t.index ["owner_id"], name: "index_comments_on_owner_id"
     t.index ["question_id"], name: "index_comments_on_question_id"
     t.index ["site_id"], name: "index_comments_on_site_id"
   end
@@ -153,7 +156,9 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.datetime "updated_at", null: false
     t.boolean "removed"
     t.integer "accepted_answer_external_id"
+    t.index ["accepted_answer_id"], name: "index_questions_on_accepted_answer_id"
     t.index ["external_id"], name: "index_questions_on_external_id"
+    t.index ["owner_id"], name: "index_questions_on_owner_id"
     t.index ["site_id"], name: "index_questions_on_site_id"
   end
 
@@ -220,8 +225,14 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "removed"
+    t.integer "answers_count"
+    t.integer "questions_count"
+    t.integer "user_badges_count"
+    t.integer "comments_count"
+    t.index ["account_id"], name: "users_account_id"
     t.index ["external_id"], name: "index_users_on_external_id"
     t.index ["id"], name: "index_users_on_id"
+    t.index ["site_id"], name: "index_users_on_site_id"
   end
 
   add_foreign_key "answer_tags", "answers"
