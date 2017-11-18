@@ -4,7 +4,8 @@ require 'descriptive_statistics'
 namespace :user_segmentation do
   task :user_data_to_csv => :environment do
 
-    CSV.open('tmp/data.csv', 'w') do |writer|
+    CSV.open('tmp/data_so.csv', 'w') do |writer|
+      site = 3
       counter = 0
       potential_counter = 0
       count = User.count
@@ -12,23 +13,29 @@ namespace :user_segmentation do
 
       writer << %w(id display_name
                     questions_count answered_questions_count answers_count comments_count user_badges_count
+                    user_tags_count
                     question_tags_count
                     answer_tags_count
                     mu_questions mu_answers mu_comments expertise satisfaction)
 
-      User.includes(:questions, :comments, :answers, :user_badges).find_in_batches(batch_size: batch) do |users|
-        user_reputations = users.map(&:reputation)
-        min_reputation = user_reputations.min
-        std_dev_reputation = user_reputations.standard_deviation
+#      TODO satisfakciu ratat v R
+#      user_reputations = random_users.map(&:reputation)
+#      min_reputation = user_reputations.min
+#      std_dev_reputation = user_reputations.standard_deviation
 
-        users.select{ |u| !u.without_activity }.each do |user|
-          next if user.without_activity
+      User.for_site(site)
+          .includes(:questions, :answers, :user_badges)
+          .find_in_batches(batch_size: batch) do |users|
+        users.each do |user|
+          next if user.without_activity? || counter > 250000
+
           row = [user.id, user.display_name, #2
-                 user.questions.size, user.questions.where(is_answered: true).size, user.answers.size, user.comments.size, user.user_badges.size, #5
+                 user.questions_count, user.questions.where(is_answered: true).size, user.answers_count, user.comments.size, user.user_badges.map(&:badge_id).uniq.size, #5
+                 user.user_tags.map(&:tag_id).uniq.size, #1
                  user.questions.map {|q| q.tags.map(&:name)}.flatten.uniq.size, #1
                  user.answers.map {|a| a.question.tags.map(&:name)}.flatten.uniq.size] #1
 
-          mu_questions = user.questions.size == 0 ? 0 : user.questions.reduce(0.0) {|sum, q| sum + q.score} / user.questions.size
+          mu_questions = user.questions_count == 0 ? 0 : user.questions.reduce(0.0) {|sum, q| sum + q.score} / user.questions_count
 
           mu_answers = 0
           user.answers.each do |answer|
@@ -43,7 +50,7 @@ namespace :user_segmentation do
                   0
                 end
           end
-          mu_answers = mu_answers / user.answers.size if user.answers.size > 0
+          mu_answers = mu_answers / user.answers_count if user.answers_count > 0
 
           mu_comments = 0
           user.comments.each do |comment|
@@ -61,21 +68,37 @@ namespace :user_segmentation do
           mu_comments = mu_comments / user.comments.size if user.comments.size > 0
 
           answered_questions = user.answers.map(&:question_id).uniq.size
-          expertise = answered_questions == 0 || user.questions.size == 0 ? 0 : (answered_questions - user.questions.size).to_f / (Math.sqrt(answered_questions) + Math.sqrt(user.questions.size))
-
-          satisfaction = (user.reputation - min_reputation) / std_dev_reputation
+          expertise = answered_questions == 0 || user.questions_count == 0 ? 0 : (answered_questions - user.questions_count).to_f / (Math.sqrt(answered_questions) + Math.sqrt(user.questions_count))
 
           row << mu_questions
           row << mu_answers
           row << mu_comments
           row << expertise
-          row << satisfaction
+          row << user.reputation
           writer << row
           counter += 1
         end
 
         potential_counter += batch
         print("Processed #{counter} of #{count} Users (potential #{potential_counter})... \r")
+      end
+    end
+
+  end
+
+  task :counts_to_db => :environment do
+    counter = 0
+    site = 3
+    count = User.for_site(site).count
+
+    User.for_site(site).find_in_batches do |users|
+      User.transaction do
+        users.each do |user|
+          user.update(comments_count: user.comments.count, user_badges_count: user.user_badges.count, questions_count: user.questions.count, answers_count: user.answers.count)
+
+          counter += 1
+          print("Processed #{counter} of #{count} Users... \r")
+        end
       end
     end
 

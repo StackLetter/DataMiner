@@ -23,8 +23,8 @@ class User < ApplicationRecord
     nil
   end
 
-  def without_activity
-    self.answers.size == 0 && self.comments.size == 0 && self.questions.size == 0 && self.user_badges.size == 0
+  def without_activity?
+    self.answers_count == 0 && self.questions_count == 0 && self.comments.size == 0
   end
 
   protected
