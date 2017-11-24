@@ -1,6 +1,7 @@
 class Comment < ApplicationRecord
   include OwnerValidationConcern
   include SiteIdScopedConcern
+  include ValidUtfBodyConcern
 
   belongs_to :answer, required: false
   belongs_to :question, required: false
