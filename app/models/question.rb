@@ -3,6 +3,7 @@ class Question < ApplicationRecord
   include ApiTagsIncludedConcern
   include OwnerValidationConcern
   include SiteIdScopedConcern
+  include ValidUtfBodyConcern
 
   belongs_to :owner, class_name: 'User', optional: true
   has_many :answers, dependent: :destroy
