@@ -16,7 +16,7 @@ namespace :user_segmentation do
                     user_tags_count
                     question_tags_count
                     answer_tags_count
-                    mu_questions mu_answers mu_comments expertise satisfaction)
+                    mu_questions mu_answers mu_comments expertise reputation)
 
       User.for_site(site)
           .includes(:questions, :answers, :user_badges)
@@ -25,7 +25,7 @@ namespace :user_segmentation do
           next if user.without_activity? || counter > 250000
 
           row = [user.id, user.display_name.gsub(',', ';'), #2
-                 user.questions_count, user.questions.where(is_answered: true).size, user.answers_count, user.comments.size, user.user_badges.map(&:badge_id).uniq.size, #5
+                 user.questions_count, user.answers.map(&:question_id).uniq.size, user.answers_count, user.comments.size, user.user_badges.map(&:badge_id).uniq.size, #5
                  user.user_tags.map(&:tag_id).uniq.size, #1
                  user.questions.map {|q| q.tags.map(&:name)}.flatten.uniq.size, #1
                  user.answers.map {|a| a.question.tags.map(&:name)}.flatten.uniq.size] #1
