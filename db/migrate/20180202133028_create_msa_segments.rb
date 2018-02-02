@@ -3,6 +3,7 @@ class CreateMsaSegments < ActiveRecord::Migration[5.1]
     create_table :msa_segments do |t|
       t.string :name
       t.text :description
+      t.integer :r_identifier
 
       t.timestamps
     end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180202145054) do
+ActiveRecord::Schema.define(version: 20180202145056) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -126,6 +126,7 @@ ActiveRecord::Schema.define(version: 20180202145054) do
   create_table "msa_segments", force: :cascade do |t|
     t.string "name"
     t.text "description"
+    t.integer "r_identifier"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
@@ -254,6 +255,7 @@ ActiveRecord::Schema.define(version: 20180202145054) do
     t.integer "user_badges_count"
     t.integer "comments_count"
     t.integer "segment_id"
+    t.boolean "segment_changed"
     t.index ["account_id"], name: "users_account_id"
     t.index ["external_id"], name: "index_users_on_external_id"
     t.index ["id"], name: "index_users_on_id"
@@ -278,5 +280,6 @@ ActiveRecord::Schema.define(version: 20180202145054) do
   add_foreign_key "user_badges", "users"
   add_foreign_key "user_tags", "tags"
   add_foreign_key "user_tags", "users"
+  add_foreign_key "users", "msa_segments", column: "segment_id"
   add_foreign_key "users", "sites"
 end
