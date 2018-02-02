@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171117153546) do
+ActiveRecord::Schema.define(version: 20180202145054) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -104,6 +104,30 @@ ActiveRecord::Schema.define(version: 20171117153546) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["newsletter_id"], name: "index_evaluation_newsletters_on_newsletter_id"
+  end
+
+  create_table "msa_sections", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "msa_segment_sections", force: :cascade do |t|
+    t.integer "segment_id"
+    t.integer "section_id"
+    t.float "reward"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["section_id"], name: "index_msa_segment_sections_on_section_id"
+    t.index ["segment_id"], name: "index_msa_segment_sections_on_segment_id"
+  end
+
+  create_table "msa_segments", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "newsletter_sections", force: :cascade do |t|
@@ -229,9 +253,11 @@ ActiveRecord::Schema.define(version: 20171117153546) do
     t.integer "questions_count"
     t.integer "user_badges_count"
     t.integer "comments_count"
+    t.integer "segment_id"
     t.index ["account_id"], name: "users_account_id"
     t.index ["external_id"], name: "index_users_on_external_id"
     t.index ["id"], name: "index_users_on_id"
+    t.index ["segment_id"], name: "index_users_on_segment_id"
     t.index ["site_id"], name: "index_users_on_site_id"
   end
 
@@ -241,6 +267,8 @@ ActiveRecord::Schema.define(version: 20171117153546) do
   add_foreign_key "answers", "users", column: "owner_id"
   add_foreign_key "comments", "users", column: "owner_id"
   add_foreign_key "evaluation_newsletters", "newsletters"
+  add_foreign_key "msa_segment_sections", "msa_sections", column: "section_id"
+  add_foreign_key "msa_segment_sections", "msa_segments", column: "segment_id"
   add_foreign_key "newsletter_sections", "newsletters"
   add_foreign_key "newsletters", "users"
   add_foreign_key "question_tags", "questions"

@@ -1,0 +1,2 @@
+class MsaSegment < ApplicationRecord
+end

@@ -1,14 +1,13 @@
-require 'csv'
-require 'descriptive_statistics'
+class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
 
-namespace :user_segmentation do
-  task :user_data_to_csv => :environment do
+  def perform
+    # load R, for each stack lettere users predict segment, if changed update changed segment
 
-    CSV.open('tmp/data_so.csv', 'w') do |writer|
+    CSV.open('tmp/stackletter_users.csv', 'w') do |writer|
       site = 3 # SO
       counter = 0
       potential_counter = 0
-      count = User.count
+      count = User.stackletter_users.count
       batch = 1000
 
       writer << %w(id display_name
@@ -18,11 +17,11 @@ namespace :user_segmentation do
                     answer_tags_count
                     mu_questions mu_answers mu_comments expertise reputation)
 
-      User.for_site(site)
+      User.stackletter_users.for_site(site)
           .includes(:questions, :answers, :user_badges)
           .find_in_batches(batch_size: batch) do |users|
         users.each do |user|
-          next if user.without_activity? || counter > 250000
+          next if user.without_activity?
 
           row = [user.id, user.display_name.gsub(',', ';'), #2
                  user.questions_count, user.answers.map(&:question_id).uniq.size, user.answers_count, user.comments.size, user.user_badges.map(&:badge_id).uniq.size, #5
@@ -82,24 +81,6 @@ namespace :user_segmentation do
         print("Processed #{counter} of #{count} Users (potential #{potential_counter})... \r")
       end
     end
-
   end
 
-  task :counts_to_db => :environment do
-    counter = 0
-    site = 3
-    count = User.for_site(site).count
-
-    User.for_site(site).find_in_batches do |users|
-      User.transaction do
-        users.each do |user|
-          user.update(comments_count: user.comments.count, user_badges_count: user.user_badges.count, questions_count: user.questions.count, answers_count: user.answers.count)
-
-          counter += 1
-          print("Processed #{counter} of #{count} Users... \r")
-        end
-      end
-    end
-
-  end
 end
