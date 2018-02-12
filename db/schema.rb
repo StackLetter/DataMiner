@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180202145056) do
+ActiveRecord::Schema.define(version: 20180212143513) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -129,6 +129,16 @@ ActiveRecord::Schema.define(version: 20180202145056) do
     t.integer "r_identifier"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "msa_weekly_newsletter_sections", force: :cascade do |t|
+    t.datetime "from"
+    t.datetime "to"
+    t.integer "weekly_segment_sections", default: [], array: true
+    t.integer "segment_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["segment_id"], name: "index_msa_weekly_newsletter_sections_on_segment_id"
   end
 
   create_table "newsletter_sections", force: :cascade do |t|
@@ -271,6 +281,7 @@ ActiveRecord::Schema.define(version: 20180202145056) do
   add_foreign_key "evaluation_newsletters", "newsletters"
   add_foreign_key "msa_segment_sections", "msa_sections", column: "section_id"
   add_foreign_key "msa_segment_sections", "msa_segments", column: "segment_id"
+  add_foreign_key "msa_weekly_newsletter_sections", "msa_segments", column: "segment_id"
   add_foreign_key "newsletter_sections", "newsletters"
   add_foreign_key "newsletters", "users"
   add_foreign_key "question_tags", "questions"

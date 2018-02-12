@@ -1,5 +1,4 @@
 require 'csv'
-
 class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
 
   def perform
@@ -86,7 +85,7 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
         print("Processed #{counter} of #{count} Users (potential #{potential_counter})... \r")
       end
     end
-debugger
+
     res = system("Rscript #{Rails.root}/app/jobs/bandit_jobs/R/generate_segments_for_users.R")
     ErrorReporter.report(:error, Exception.new, 'Segments of users were not updated!') unless res
 
