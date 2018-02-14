@@ -13,6 +13,8 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy, foreign_key: :owner_id
   has_many :newsletters
   has_many :evaluation_newsletters, through: :newsletters
+  belongs_to :msa_segment, foreign_key: :segment_id
+  has_many :msa_user_segment_changes
 
   scope :existing, -> { where('users.removed IS NULL') }
   scope :stackletter_users, -> { where('users.account_id IS NOT NULL') }

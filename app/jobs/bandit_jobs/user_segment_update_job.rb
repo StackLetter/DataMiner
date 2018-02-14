@@ -67,7 +67,7 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
                   0
                 end
           end
-          mu_comments = mu_comments / (user.comments.size - zeros) if  (user.comments.size - zeros) > 0
+          mu_comments = mu_comments / (user.comments.size - zeros) if (user.comments.size - zeros) > 0
 
           answered_questions = user.answers.map(&:question_id).uniq.size
           expertise = answered_questions == 0 || user.questions.count == 0 ? 0 : (answered_questions - user.questions.count).to_f / (Math.sqrt(answered_questions) + Math.sqrt(user.questions.count))
@@ -92,7 +92,10 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
     csv = CSV.parse(File.open('tmp/stackletter_users_with_segments.csv'), headers: false)
     csv.each do |row|
       user = User.find(row[0])
-      user.update(segment_changed: true, segment_id: Segment.find_by(r_identifier: row[1])) if row[1] != user.segment.r_identifier
+      if row[1] != user.msa_segment.r_identifier
+        MsaUserSegmentChange.create(from_r_identifier: user.msa_segment.r_identifier, to_r_identifier: row[1], user_id: user.id)
+        user.update(segment_changed: true, segment_id: Segment.find_by(r_identifier: row[1]))
+      end
     end
   end
 
