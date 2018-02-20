@@ -13,6 +13,8 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy, foreign_key: :owner_id
   has_many :newsletters
   has_many :evaluation_newsletters, through: :newsletters
+  belongs_to :msa_segment, foreign_key: :segment_id
+  has_many :msa_user_segment_changes
 
   scope :existing, -> { where('users.removed IS NULL') }
   scope :stackletter_users, -> { where('users.account_id IS NOT NULL') }
@@ -21,6 +23,10 @@ class User < ApplicationRecord
     return self.find_by(external_id: api_item_response['external_id'], site_id: site_id) if api_item_response['external_id']
     return self.find_by(external_id: api_item_response['user_id'], site_id: site_id) if api_item_response['user_id']
     nil
+  end
+
+  def without_activity?
+    self.answers_count == 0 && self.questions_count == 0 && self.comments.size == 0
   end
 
   protected

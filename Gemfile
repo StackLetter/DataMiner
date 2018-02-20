@@ -25,10 +25,11 @@ gem 'htmlentities'
 
 gem 'figaro'
 
+gem 'descriptive_statistics'
+
 gem 'uglifier', '>= 1.3.0'
 gem 'execjs'
 gem 'therubyracer'
-# gem 'capistrano-rails', group: :development
 
 group :development, :test do
   gem 'byebug', platforms: [:mri, :mingw, :x64_mingw]

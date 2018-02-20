@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20171110154037) do
+ActiveRecord::Schema.define(version: 20180214173227) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -52,6 +52,8 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.datetime "updated_at", null: false
     t.boolean "removed"
     t.index ["external_id"], name: "index_answers_on_external_id"
+    t.index ["owner_id"], name: "index_answers_on_owner_id"
+    t.index ["question_id"], name: "index_answers_on_question_id"
     t.index ["site_id"], name: "index_answers_on_site_id"
   end
 
@@ -85,6 +87,7 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.boolean "removed"
     t.index ["answer_id"], name: "index_comments_on_answer_id"
     t.index ["external_id"], name: "index_comments_on_external_id"
+    t.index ["owner_id"], name: "index_comments_on_owner_id"
     t.index ["question_id"], name: "index_comments_on_question_id"
     t.index ["site_id"], name: "index_comments_on_site_id"
   end
@@ -101,6 +104,50 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["newsletter_id"], name: "index_evaluation_newsletters_on_newsletter_id"
+  end
+
+  create_table "msa_sections", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "msa_segment_sections", force: :cascade do |t|
+    t.integer "segment_id"
+    t.integer "section_id"
+    t.float "reward"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["section_id"], name: "index_msa_segment_sections_on_section_id"
+    t.index ["segment_id"], name: "index_msa_segment_sections_on_segment_id"
+  end
+
+  create_table "msa_segments", force: :cascade do |t|
+    t.string "name"
+    t.text "description"
+    t.integer "r_identifier"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "msa_user_segment_changes", force: :cascade do |t|
+    t.integer "from_r_identifier"
+    t.integer "to_r_identifier"
+    t.integer "user_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_msa_user_segment_changes_on_user_id"
+  end
+
+  create_table "msa_weekly_newsletter_sections", force: :cascade do |t|
+    t.datetime "from"
+    t.datetime "to"
+    t.integer "weekly_segment_sections", default: [], array: true
+    t.integer "segment_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["segment_id"], name: "index_msa_weekly_newsletter_sections_on_segment_id"
   end
 
   create_table "newsletter_sections", force: :cascade do |t|
@@ -153,7 +200,9 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.datetime "updated_at", null: false
     t.boolean "removed"
     t.integer "accepted_answer_external_id"
+    t.index ["accepted_answer_id"], name: "index_questions_on_accepted_answer_id"
     t.index ["external_id"], name: "index_questions_on_external_id"
+    t.index ["owner_id"], name: "index_questions_on_owner_id"
     t.index ["site_id"], name: "index_questions_on_site_id"
   end
 
@@ -220,8 +269,17 @@ ActiveRecord::Schema.define(version: 20171110154037) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "removed"
+    t.integer "answers_count"
+    t.integer "questions_count"
+    t.integer "user_badges_count"
+    t.integer "comments_count"
+    t.integer "segment_id"
+    t.boolean "segment_changed"
+    t.index ["account_id"], name: "users_account_id"
     t.index ["external_id"], name: "index_users_on_external_id"
     t.index ["id"], name: "index_users_on_id"
+    t.index ["segment_id"], name: "index_users_on_segment_id"
+    t.index ["site_id"], name: "index_users_on_site_id"
   end
 
   add_foreign_key "answer_tags", "answers"
@@ -230,6 +288,10 @@ ActiveRecord::Schema.define(version: 20171110154037) do
   add_foreign_key "answers", "users", column: "owner_id"
   add_foreign_key "comments", "users", column: "owner_id"
   add_foreign_key "evaluation_newsletters", "newsletters"
+  add_foreign_key "msa_segment_sections", "msa_sections", column: "section_id"
+  add_foreign_key "msa_segment_sections", "msa_segments", column: "segment_id"
+  add_foreign_key "msa_user_segment_changes", "users"
+  add_foreign_key "msa_weekly_newsletter_sections", "msa_segments", column: "segment_id"
   add_foreign_key "newsletter_sections", "newsletters"
   add_foreign_key "newsletters", "users"
   add_foreign_key "question_tags", "questions"
@@ -239,5 +301,6 @@ ActiveRecord::Schema.define(version: 20171110154037) do
   add_foreign_key "user_badges", "users"
   add_foreign_key "user_tags", "tags"
   add_foreign_key "user_tags", "users"
+  add_foreign_key "users", "msa_segments", column: "segment_id"
   add_foreign_key "users", "sites"
 end
