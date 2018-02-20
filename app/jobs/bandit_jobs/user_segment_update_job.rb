@@ -92,8 +92,8 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
     csv = CSV.parse(File.open('tmp/stackletter_users_with_segments.csv'), headers: false)
     csv.each do |row|
       user = User.find(row[0])
-      if row[1] != user.msa_segment.r_identifier
-        MsaUserSegmentChange.create(from_r_identifier: user.msa_segment.r_identifier, to_r_identifier: row[1], user_id: user.id)
+      if row[1] != user.msa_segment.try(:r_identifier)
+        MsaUserSegmentChange.create(from_r_identifier: user.msa_segment.r_identifier, to_r_identifier: row[1], user_id: user.id) if user.msa_segment
         user.update(segment_changed: true, segment_id: Segment.find_by(r_identifier: row[1]))
       end
     end
