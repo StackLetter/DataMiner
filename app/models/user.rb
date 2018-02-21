@@ -13,7 +13,7 @@ class User < ApplicationRecord
   has_many :comments, dependent: :destroy, foreign_key: :owner_id
   has_many :newsletters
   has_many :evaluation_newsletters, through: :newsletters
-  belongs_to :msa_segment, foreign_key: :segment_id
+  belongs_to :msa_segment, foreign_key: :segment_id, optional: true
   has_many :msa_user_segment_changes
 
   scope :existing, -> { where('users.removed IS NULL') }
@@ -26,7 +26,7 @@ class User < ApplicationRecord
   end
 
   def without_activity?
-    self.answers_count == 0 && self.questions_count == 0 && self.comments.size == 0
+    self.answers.count == 0 && self.questions.count == 0 && self.comments.size == 0
   end
 
   protected

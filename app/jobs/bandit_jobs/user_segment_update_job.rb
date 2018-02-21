@@ -5,14 +5,11 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
     # load R, for each stack letter users predict segment, if changed update changed segment
 
     CSV.open('tmp/stackletter_users.csv', 'w') do |writer|
-      site = 3 # SO
-      counter = 0
-      potential_counter = 0
-      count = User.stackletter_users.count
+      site = Site.find_by_api('stackoverflow').id
       batch = 1000
 
       writer << %w(id display_name
-                    questions_count answered_questions_count answers_count comments_count user_badges_count
+                    questions_count answers_count comments_count user_badges_count
                     user_tags_count
                     question_tags_count
                     answer_tags_count
@@ -23,12 +20,12 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
           .find_in_batches(batch_size: batch) do |users|
         users.each do |user|
           if user.without_activity?
+            user.update(segment_id: MsaSegment.find_by(r_identifier: -1))
             next
-            # TODO assign takychto pouzivatelov rovno do specifickeho segmentu
           end
 
           row = [user.id, user.display_name.gsub(',', ';'), #2
-                 user.questions.count, user.answers.map(&:question_id).uniq.size, user.answers.count, user.comments.size, user.user_badges.map(&:badge_id).uniq.size, #5
+                 user.questions.count, user.answers.count, user.comments.size, user.user_badges.map(&:badge_id).uniq.size, #5
                  user.user_tags.map(&:tag_id).uniq.size, #1
                  user.questions.map {|q| q.tags.map(&:name)}.flatten.uniq.size, #1
                  user.answers.map {|a| a.question.tags.map(&:name)}.flatten.uniq.size] #1
@@ -78,23 +75,22 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
           row << expertise
           row << user.reputation
           writer << row
-          counter += 1
         end
 
-        potential_counter += batch
-        print("Processed #{counter} of #{count} Users (potential #{potential_counter})... \r")
       end
     end
 
     res = system("Rscript #{Rails.root}/app/jobs/bandit_jobs/R/generate_segments_for_users.R")
     ErrorReporter.report(:error, Exception.new, 'Segments of users were not updated!') unless res
 
-    csv = CSV.parse(File.open('tmp/stackletter_users_with_segments.csv'), headers: false)
+    csv = CSV.parse(File.open('tmp/stackletter_users_with_segments.csv'), headers: true)
     csv.each do |row|
       user = User.find(row[0])
-      if row[1] != user.msa_segment.try(:r_identifier)
-        MsaUserSegmentChange.create(from_r_identifier: user.msa_segment.r_identifier, to_r_identifier: row[1], user_id: user.id) if user.msa_segment
-        user.update(segment_changed: true, segment_id: Segment.find_by(r_identifier: row[1]))
+      if row[1].to_i != user.msa_segment.try(:r_identifier).try(:to_i)
+        MsaUserSegmentChange.create(from_r_identifier: user.msa_segment.r_identifier, to_r_identifier: row[1].to_i, user_id: user.id) if user.msa_segment
+
+        segment_changed = user.msa_segment.nil? ? false : true
+        user.update(segment_changed: segment_changed, segment_id: MsaSegment.find_by(r_identifier: row[1].to_i))
       end
     end
   end
