@@ -20,7 +20,7 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
           .find_in_batches(batch_size: batch) do |users|
         users.each do |user|
           if user.without_activity?
-            user.update(segment_id: MsaSegment.find_by(r_identifier: -1))
+            user.update(segment_id: MsaSegment.find_by(r_identifier: -1).id)
             next
           end
 
