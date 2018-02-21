@@ -1,5 +1,5 @@
-#setwd('/home/dataminer/DataMiner/app/jobs/bandit_jobs/R/')
-setwd('/home/msalat/School/DiplomaProject/DataMiner/app/jobs/bandit_jobs/R/')
+setwd('/home/dataminer/DataMiner/app/jobs/bandit_jobs/R/')
+#setwd('/home/msalat/School/DiplomaProject/DataMiner/app/jobs/bandit_jobs/R/')
 source('./support_functions.R')
 
 stackletter_users <- getCsv('../../../../tmp/stackletter_users.csv')

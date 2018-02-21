@@ -90,7 +90,7 @@ class BanditJobs::UserSegmentUpdateJob < BanditJobs::BanditJob
         MsaUserSegmentChange.create(from_r_identifier: user.msa_segment.r_identifier, to_r_identifier: row[1].to_i, user_id: user.id) if user.msa_segment
 
         segment_changed = user.msa_segment.nil? ? false : true
-        user.update(segment_changed: segment_changed, segment_id: MsaSegment.find_by(r_identifier: row[1].to_i))
+        user.update(segment_changed: segment_changed, segment_id: MsaSegment.find_by(r_identifier: row[1].to_i).id)
       end
     end
   end
