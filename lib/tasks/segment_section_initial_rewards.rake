@@ -28,6 +28,15 @@ namespace :initial_model do
     end
 
   end
-end
 
-# MsaSegment.includes(msa_segment_sections: :msa_section).all.each {|s| puts(s.name ,s.msa_segment_sections.map {|ss| [ss.reward, ss.msa_section.name].join('-') }.sort.join('  ->  '))}
+  task :initial_week_structure => :environment do
+
+    MsaSegment.includes(:msa_weekly_newsletter_sections, msa_segment_sections: :msa_section).all.each do |segment|
+      sorted_segments_ids = segment.msa_segment_sections.sort_by(&:reward).reverse.map(&:section_id)[0..2]
+
+      segment.msa_weekly_newsletter_sections.destroy_all
+      segment.msa_weekly_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, weekly_segment_sections: sorted_segments_ids).save
+    end
+
+  end
+end

@@ -7,9 +7,23 @@ class PersonalizedRecoController < ApplicationController
     daily = @frequency == 'd'
     limit = daily ? 2 : 5
 
-    # get structure for user segment
+    day = DateTime.now
+    weekly_section = @user.msa_segment.msa_weekly_newsletter_sections.where('? >= msa_weekly_newsletter_sections.from', day).where('? <= msa_weekly_newsletter_sections.to', day).first
 
-    render json: {}
+    output = weekly_section.weekly_segment_sections.inject([]) do |buf, wss|
+      section = MsaSection.find(wss)
+      buf << {
+          content_type: section.content_type,
+          name: section.name,
+          description: section.description.gsub(/ ---- [QACV\-]/, ''),
+          limit: limit,
+          content_endpoint: section.content_endpoint + '?user_id=%1$s&frequency=%2$s&duplicates=%3$s'
+      }
+
+      buf
+    end
+
+    render json: output
   end
 
   def popular_unanswered
