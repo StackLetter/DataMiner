@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180226150451) do
+ActiveRecord::Schema.define(version: 20180226202646) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -104,6 +104,18 @@ ActiveRecord::Schema.define(version: 20180226150451) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["newsletter_id"], name: "index_evaluation_newsletters_on_newsletter_id"
+  end
+
+  create_table "mls_question_topics", force: :cascade do |t|
+    t.integer "question_id"
+    t.integer "topic_id"
+    t.integer "site_id"
+    t.float "weight"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["question_id"], name: "index_mls_question_topics_on_question_id"
+    t.index ["site_id"], name: "index_mls_question_topics_on_site_id"
+    t.index ["topic_id"], name: "index_mls_question_topics_on_topic_id"
   end
 
   create_table "msa_sections", force: :cascade do |t|
@@ -291,6 +303,8 @@ ActiveRecord::Schema.define(version: 20180226150451) do
   add_foreign_key "answers", "users", column: "owner_id"
   add_foreign_key "comments", "users", column: "owner_id"
   add_foreign_key "evaluation_newsletters", "newsletters"
+  add_foreign_key "mls_question_topics", "questions"
+  add_foreign_key "mls_question_topics", "sites"
   add_foreign_key "msa_segment_sections", "msa_sections", column: "section_id"
   add_foreign_key "msa_segment_sections", "msa_segments", column: "segment_id"
   add_foreign_key "msa_user_segment_changes", "users"
