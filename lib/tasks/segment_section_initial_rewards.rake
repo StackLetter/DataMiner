@@ -32,7 +32,7 @@ namespace :initial_model do
   task :initial_week_structure => :environment do
 
     MsaSegment.includes(:msa_weekly_newsletter_sections, msa_segment_sections: :msa_section).all.each do |segment|
-      sorted_segments_ids = segment.msa_segment_sections.sort_by(&:reward).reverse.map(&:section_id)[0..2]
+      sorted_segments_ids = segment.msa_segment_sections.sort_by(&:reward).reverse.map(&:section_id)
 
       segment.msa_weekly_newsletter_sections.destroy_all
       segment.msa_weekly_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, weekly_segment_sections: sorted_segments_ids).save

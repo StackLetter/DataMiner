@@ -29,6 +29,10 @@ class User < ApplicationRecord
     self.answers.count == 0 && self.questions.count == 0 && self.comments.size == 0
   end
 
+  def new_badges?(from_date)
+    user_badges.where('created_at >= ?', from_date).any?
+  end
+
   protected
 
   def translate_html_entities

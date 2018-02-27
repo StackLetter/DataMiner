@@ -2,23 +2,33 @@ class PersonalizedRecoController < ApplicationController
 
   before_action :variables_init
 
+  QUERY_LIMIT = 10
+
   def index
-    head 400 unless @user
     daily = @frequency == 'd'
     limit = daily ? 2 : 5
 
     day = DateTime.now
     weekly_section = @user.msa_segment.msa_weekly_newsletter_sections.where('? >= msa_weekly_newsletter_sections.from', day).where('? <= msa_weekly_newsletter_sections.to', day).first
 
-    output = weekly_section.weekly_segment_sections.inject([]) do |buf, wss|
-      section = MsaSection.find(wss)
-      buf << {
-          content_type: section.content_type,
-          name: section.name,
-          description: section.description.gsub(/ ---- [QACV\-]/, ''),
-          limit: limit,
-          content_endpoint: section.content_endpoint + '?user_id=%1$s&frequency=%2$s&duplicates=%3$s'
-      }
+    successful_sections = 0
+    output = weekly_section.weekly_segment_sections[0..(MsaWeeklyNewsletterSection::MAX_SECTIONS + MsaWeeklyNewsletterSection::BADGES_SECTIONS)].inject([]) do |buf, wss|
+      if successful_sections <= MsaWeeklyNewsletterSection::MAX_SECTIONS
+        successful_sections += 1
+        structure_condition = true
+
+        section = MsaSection.find(wss)
+        structure_condition = structure_condition && Badge.has_new_badge?(weekly_section.from, weekly_section.to, @user.site_id) if section.name == 'New badges'
+        structure_condition = structure_condition && (@user.new_badges?(weekly_section.from) || Badge.new_badges(weekly_section.from, weekly_section.to, @user.site_id).where(rank: 'gold').any?)
+
+        buf << {
+            content_type: section.content_type,
+            name: section.name,
+            description: section.description.gsub(/ ---- [QACV\-]/, ''),
+            limit: limit,
+            content_endpoint: section.content_endpoint + '?user_id=%1$s&frequency=%2$s&duplicates=%3$s'
+        } if structure_condition
+      end
 
       buf
     end
@@ -27,49 +37,182 @@ class PersonalizedRecoController < ApplicationController
   end
 
   def popular_unanswered
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
+    @questions = @questions.joins('left join answers on answers.question_id = questions.id').where('answers.question_id IS NULL')
+    @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
+    complement = []
+    if @questions.size < QUERY_LIMIT
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+                       .where('questions.creation_date > ?', @max_from_date)
+                       .where(question_tags: {tag_id: @tags})
+                       .order(score: :desc, creation_date: :asc)
+                       .joins('left join answers on answers.question_id = questions.id')
+                       .where('answers.question_id IS NULL')
+                        .distinct
+                       .limit(QUERY_LIMIT - @questions.size)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
+      complement = complement.where.not(id: where_not)
+    end
+
+    render json: filter_404_content(@questions.to_a + complement.to_a, Site.find(@user.site_id))
   end
 
   def waiting_for_an_answer
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
+    @questions = @questions.joins('left join answers on answers.question_id = questions.id').where('answers.question_id IS NULL')
+    @questions = @questions.distinct.order(score: :asc, creation_date: :asc).limit(QUERY_LIMIT)
 
+    complement = []
+    if @questions.size < QUERY_LIMIT
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+                       .where('questions.creation_date > ?', @max_from_date)
+                       .where(question_tags: {tag_id: @tags})
+                       .order(score: :asc, creation_date: :asc)
+                       .joins('left join answers on answers.question_id = questions.id')
+                       .where('answers.question_id IS NULL')
+                       .distinct
+                       .limit(QUERY_LIMIT - @questions.size)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
+      complement = complement.where.not(id: where_not)
+    end
+
+    render json: filter_404_content(@questions.to_a + complement.to_a, Site.find(@user.site_id))
   end
 
   def useful_questions
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
+    @questions = @questions.joins('left join answers on answers.question_id = questions.id').where('answers.question_id IS NOT NULL')
+    @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
+    complement = []
+    if @questions.size < QUERY_LIMIT
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+                       .where('questions.creation_date > ?', @max_from_date)
+                       .where(question_tags: {tag_id: @tags})
+                       .order(score: :desc, creation_date: :asc)
+                       .joins('left join answers on answers.question_id = questions.id')
+                       .where('answers.question_id IS NOT NULL')
+                       .distinct
+                       .limit(QUERY_LIMIT - @questions.size)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
+      complement = complement.where.not(id: where_not)
+    end
+
+    render json: filter_404_content(@questions.to_a + complement.to_a, Site.find(@user.site_id))
   end
 
   def hot_questions
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
+    @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
+    complement = []
+    if @questions.size < QUERY_LIMIT
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+                       .where('questions.creation_date > ?', @max_from_date)
+                       .where(question_tags: {tag_id: @tags})
+                       .order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT - @questions.size)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
+      complement = complement.where.not(id: where_not)
+    end
+
+    render json: filter_404_content(@questions.to_a + complement.to_a, Site.find(@user.site_id))
   end
 
   def answers_you_may_be_interested_in
+    @answers = @tags.empty? ? nil : Answer.for_site(@user.site_id).existing.joins(:answer_tags).where('answers.creation_date > ?', @from_date).where(answer_tags: {tag_id: @tags})
+    @answers = Answer.for_site(@user.site_id).existing.where('answers.creation_date > ?', @from_date) unless @answers
+    @answers = @answers.where.not(id: @duplicates[:answer]) if @duplicates[:answer]
+    @answers = @answers.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
+    complement = []
+    if @answers.size < QUERY_LIMIT
+      complement = Answer.for_site(@user.site_id).existing.joins(:answer_tags)
+                       .where('answers.creation_date > ?', @max_from_date)
+                       .where(answer_tags: {tag_id: @tags})
+                       .order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT - @answers.size)
+      where_not = @duplicates[:answer] ? @answers.map(&:id) + @duplicates[:answer] : @answers.map(&:id)
+      complement = complement.where.not(id: where_not)
+    end
+
+    render json: filter_404_content(@answers.to_a + complement.to_a, Site.find(@user.site_id), 'Answer')
   end
 
   def cqa_system_news
+    questions_change = Question.where('created_at >= ?', @from_date).count
+    answers_change = Answer.where('created_at >= ?', @from_date).count
+    users_change = User.where('created_at >= ?', @from_date).count
+    badges_change = Badge.where('created_at >= ?', @from_date).count
 
+    render json: {questions_change: questions_change, answers_change: answers_change, badges_change: badges_change, users_change: users_change}
   end
 
   def highly_discussed_questions
+    @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
+    @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
+    @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
+    @questions = @questions.distinct.order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
+    complement = []
+    if @questions.size < QUERY_LIMIT
+      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+                       .where('questions.creation_date > ?', @max_from_date)
+                       .where(question_tags: {tag_id: @tags})
+                       .order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT - @questions.size)
+      where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
+      complement = complement.where.not(id: where_not)
+    end
+
+    render json: filter_404_content(@questions.to_a + complement.to_a, Site.find(@user.site_id))
   end
 
   def highly_discussed_answers
+    @answers = @tags.empty? ? nil : Answer.for_site(@user.site_id).existing.joins(:answer_tags).where('answers.creation_date > ?', @from_date).where(answer_tags: {tag_id: @tags})
+    @answers = Answer.for_site(@user.site_id).existing.where('answers.creation_date > ?', @from_date) unless @answers
+    @answers = @answers.where.not(id: @duplicates[:answer]) if @duplicates[:answer]
+    @answers = @answers.distinct.order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
+    complement = []
+    if @answers.size < QUERY_LIMIT
+      complement = Answer.for_site(@user.site_id).existing.joins(:answer_tags)
+                       .where('answers.creation_date > ?', @max_from_date)
+                       .where(answer_tags: {tag_id: @tags})
+                       .order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT - @answers.size)
+      where_not = @duplicates[:answer] ? @answers.map(&:id) + @duplicates[:answer] : @answers.map(&:id)
+      complement = complement.where.not(id: where_not)
+    end
+
+    render json: filter_404_content(@answers.to_a + complement.to_a, Site.find(@user.site_id), 'Answer')
   end
 
   def new_badges
+    new_badges = Badge.new_badges(@from_date, DateTime.now, @user.site_id)
 
+    render json: new_badges.map(&:id)
   end
 
   def prestigious_badges_count_change
+    new_badges = Badge.new_badges(@from_date, DateTime.now, @user.site_id).where(rank: 'gold')
+    users_new_badges = @user.user_badges.where('created_at >= ?', @from_date).map {|ub| ub.badge.id}
 
+    output = {'congratulations': users_new_badges, 'prestigious_new_badges': new_badges.map(&:id)}
+
+    render json: output
   end
 
   private
 
   def variables_init
     @user = User.includes(:user_tags, questions: :question_tags).find(recommendation_params[:user_id])
+    head 400 unless @user
 
     @frequency = recommendation_params[:frequency]
     @from_date = @frequency == 'd' ? 1.day.ago : 7.day.ago

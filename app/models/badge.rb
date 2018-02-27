@@ -10,4 +10,12 @@ class Badge < ApplicationRecord
     return self.find_by(external_id: api_item_response['badge_id'], site_id: site_id) if api_item_response['badge_id']
     nil
   end
+
+  def self.has_new_badge?(from, to, site_id)
+    self.new_badges(from, to, site_id).any?
+  end
+
+  def self.new_badges(from, to, site_id)
+    self.where('created_at >= ?', from).where('created_at <= ?', to).where(site_id: site_id)
+  end
 end

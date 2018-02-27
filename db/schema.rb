@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180226210220) do
+ActiveRecord::Schema.define(version: 20180227134648) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -51,6 +51,7 @@ ActiveRecord::Schema.define(version: 20180226210220) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "removed"
+    t.integer "comment_count"
     t.index ["external_id"], name: "index_answers_on_external_id"
     t.index ["owner_id"], name: "index_answers_on_owner_id"
     t.index ["question_id"], name: "index_answers_on_question_id"
@@ -216,6 +217,7 @@ ActiveRecord::Schema.define(version: 20180226210220) do
     t.datetime "updated_at", null: false
     t.boolean "removed"
     t.integer "accepted_answer_external_id"
+    t.integer "comment_count"
     t.index ["accepted_answer_id"], name: "index_questions_on_accepted_answer_id"
     t.index ["external_id"], name: "index_questions_on_external_id"
     t.index ["owner_id"], name: "index_questions_on_owner_id"
