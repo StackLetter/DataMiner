@@ -22,7 +22,7 @@ class PersonalizedRecoController < ApplicationController
 
         section = MsaSection.find(wss)
         structure_condition = structure_condition && Badge.has_new_badge?(sections.from, sections.to, @user.site_id) if section.name == 'New badges'
-        structure_condition = structure_condition && (@user.new_badges?(sections.from) || Badge.new_badges(sections.from, sections.to, @user.site_id).where(rank: 'gold').any?)  if section.name == 'Prestigious badges count change'
+        structure_condition = structure_condition && (@user.new_badges?(sections.from) || Badge.new_badges(sections.from, sections.to, @user.site_id).where(rank: 'gold').any?)  if section.name == 'Prestigious badges'
 
         if structure_condition
           msa_segment_section = @user.msa_segment.msa_segment_sections.find_by(section_id: wss)
