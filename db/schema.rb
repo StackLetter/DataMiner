@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180227134648) do
+ActiveRecord::Schema.define(version: 20180228130139) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -119,6 +119,16 @@ ActiveRecord::Schema.define(version: 20180227134648) do
     t.index ["topic_id"], name: "index_mls_question_topics_on_topic_id"
   end
 
+  create_table "msa_daily_newsletter_sections", force: :cascade do |t|
+    t.datetime "from"
+    t.datetime "to"
+    t.integer "sorted_sections", default: [], array: true
+    t.integer "segment_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["segment_id"], name: "index_msa_daily_newsletter_sections_on_segment_id"
+  end
+
   create_table "msa_sections", force: :cascade do |t|
     t.string "name"
     t.text "description"
@@ -130,12 +140,23 @@ ActiveRecord::Schema.define(version: 20180227134648) do
     t.string "content_type"
   end
 
+  create_table "msa_segment_section_reward_histories", force: :cascade do |t|
+    t.integer "sections_ids", array: true
+    t.float "sections_rewards", array: true
+    t.integer "segment_id"
+    t.string "newsletter_type"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["segment_id"], name: "index_msa_segment_section_reward_histories_on_segment_id"
+  end
+
   create_table "msa_segment_sections", force: :cascade do |t|
     t.integer "segment_id"
     t.integer "section_id"
     t.float "reward"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "newsletters_count"
     t.index ["section_id"], name: "index_msa_segment_sections_on_section_id"
     t.index ["segment_id"], name: "index_msa_segment_sections_on_segment_id"
   end
@@ -160,7 +181,7 @@ ActiveRecord::Schema.define(version: 20180227134648) do
   create_table "msa_weekly_newsletter_sections", force: :cascade do |t|
     t.datetime "from"
     t.datetime "to"
-    t.integer "weekly_segment_sections", default: [], array: true
+    t.integer "sorted_sections", default: [], array: true
     t.integer "segment_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -308,6 +329,8 @@ ActiveRecord::Schema.define(version: 20180227134648) do
   add_foreign_key "evaluation_newsletters", "newsletters"
   add_foreign_key "mls_question_topics", "questions"
   add_foreign_key "mls_question_topics", "sites"
+  add_foreign_key "msa_daily_newsletter_sections", "msa_segments", column: "segment_id"
+  add_foreign_key "msa_segment_section_reward_histories", "msa_segments", column: "segment_id"
   add_foreign_key "msa_segment_sections", "msa_sections", column: "section_id"
   add_foreign_key "msa_segment_sections", "msa_segments", column: "segment_id"
   add_foreign_key "msa_user_segment_changes", "users"

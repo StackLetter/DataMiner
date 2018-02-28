@@ -32,10 +32,27 @@ namespace :initial_model do
   task :initial_week_structure => :environment do
 
     MsaSegment.includes(:msa_weekly_newsletter_sections, msa_segment_sections: :msa_section).all.each do |segment|
-      sorted_segments_ids = segment.msa_segment_sections.sort_by(&:reward).reverse.map(&:section_id)
+      sorted_segment_sections = segment.msa_segment_sections.sort_by(&:reward).reverse
+      sorted_segment_sections_ids = sorted_segment_sections.map(&:section_id)
+      sorted_segment_sections_rewards = sorted_segment_sections.map(&:reward)
 
       segment.msa_weekly_newsletter_sections.destroy_all
-      segment.msa_weekly_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, weekly_segment_sections: sorted_segments_ids).save
+      segment.msa_segment_section_reward_histories.destroy_all
+
+      segment.msa_weekly_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, sorted_sections: sorted_segment_sections_ids).save
+      segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards, newsletter_type: 'w').save
+    end
+
+    MsaSegment.includes(:msa_daily_newsletter_sections, msa_segment_sections: :msa_section).all.each do |segment|
+      sorted_segment_sections = segment.msa_segment_sections.sort_by(&:reward).reverse
+      sorted_segment_sections_ids = sorted_segment_sections.map(&:section_id)
+      sorted_segment_sections_rewards = sorted_segment_sections.map(&:reward)
+
+      segment.msa_daily_newsletter_sections.destroy_all
+      segment.msa_segment_section_reward_histories.destroy_all
+
+      segment.msa_daily_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, sorted_sections: sorted_segment_sections_ids).save
+      segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards, newsletter_type: 'd').save
     end
 
   end

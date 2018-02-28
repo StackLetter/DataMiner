@@ -6,28 +6,36 @@ class PersonalizedRecoController < ApplicationController
 
   def index
     daily = @frequency == 'd'
-    limit = daily ? 2 : 5
-
+    limit = MsaSection::SECTION_CONTENT_LIMIT
+    max_sections = daily ? MsaDailyNewsletterSection::MAX_SECTIONS : MsaWeeklyNewsletterSection::MAX_SECTIONS
+    badges_sections = daily ? MsaDailyNewsletterSection::BADGES_SECTIONS : MsaWeeklyNewsletterSection::BADGES_SECTIONS
     day = DateTime.now
-    weekly_section = @user.msa_segment.msa_weekly_newsletter_sections.where('? >= msa_weekly_newsletter_sections.from', day).where('? <= msa_weekly_newsletter_sections.to', day).first
+
+    sections = daily ? @user.msa_segment.msa_daily_newsletter_sections.where('? >= msa_daily_newsletter_sections.from', day).where('? <= msa_daily_newsletter_sections.to', day).first
+                   : @user.msa_segment.msa_weekly_newsletter_sections.where('? >= msa_weekly_newsletter_sections.from', day).where('? <= msa_weekly_newsletter_sections.to', day).first
 
     successful_sections = 0
-    output = weekly_section.weekly_segment_sections[0..(MsaWeeklyNewsletterSection::MAX_SECTIONS + MsaWeeklyNewsletterSection::BADGES_SECTIONS)].inject([]) do |buf, wss|
-      if successful_sections <= MsaWeeklyNewsletterSection::MAX_SECTIONS
+    output = sections.sorted_sections[0..(max_sections + badges_sections)].inject([]) do |buf, wss|
+      if successful_sections <= max_sections
         successful_sections += 1
         structure_condition = true
 
         section = MsaSection.find(wss)
-        structure_condition = structure_condition && Badge.has_new_badge?(weekly_section.from, weekly_section.to, @user.site_id) if section.name == 'New badges'
-        structure_condition = structure_condition && (@user.new_badges?(weekly_section.from) || Badge.new_badges(weekly_section.from, weekly_section.to, @user.site_id).where(rank: 'gold').any?)
+        structure_condition = structure_condition && Badge.has_new_badge?(sections.from, sections.to, @user.site_id) if section.name == 'New badges'
+        structure_condition = structure_condition && (@user.new_badges?(sections.from) || Badge.new_badges(sections.from, sections.to, @user.site_id).where(rank: 'gold').any?)  if section.name == 'Prestigious badges count change'
 
-        buf << {
-            content_type: section.content_type,
-            name: section.name,
-            description: section.description.gsub(/ ---- [QACV\-]/, ''),
-            limit: limit,
-            content_endpoint: section.content_endpoint + '?user_id=%1$s&frequency=%2$s&duplicates=%3$s'
-        } if structure_condition
+        if structure_condition
+          msa_segment_section = @user.msa_segment.msa_segment_sections.find_by(section_id: wss)
+          msa_segment_section.update(newsletters_count: msa_segment_section.newsletters_count.try(:+, 1) || 1)
+
+          buf << {
+              content_type: section.content_type,
+              name: section.name,
+              description: section.description.gsub(/ ---- [QACV\-]/, ''),
+              limit: limit,
+              content_endpoint: section.content_endpoint + '?user_id=%1$s&frequency=%2$s&duplicates=%3$s'
+          }
+        end
       end
 
       buf
@@ -51,7 +59,7 @@ class PersonalizedRecoController < ApplicationController
                        .order(score: :desc, creation_date: :asc)
                        .joins('left join answers on answers.question_id = questions.id')
                        .where('answers.question_id IS NULL')
-                        .distinct
+                       .distinct
                        .limit(QUERY_LIMIT - @questions.size)
       where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
