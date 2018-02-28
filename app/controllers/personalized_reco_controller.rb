@@ -29,7 +29,7 @@ class PersonalizedRecoController < ApplicationController
 
           buf << {
               content_type: section.content_type,
-              static: ['badge', 'cqa'].include?(section.content_type),
+              custom: ['badge', 'cqa'].include?(section.content_type),
               name: section.name,
               description: section.description.gsub(/ ---- [QACB\-]/, ''),
               limit: limit,
