@@ -23,7 +23,6 @@ class PersonalizedRecoController < ApplicationController
         section = MsaSection.find(wss)
         structure_condition = structure_condition && Badge.has_new_badge?(sections.from, sections.to, @user.site_id) if section.name == 'New badges'
         structure_condition = structure_condition && (@user.new_badges?(sections.from) || Badge.new_badges(sections.from, sections.to, @user.site_id).where(rank: 'gold').any?)  if section.name == 'Prestigious badges'
-
         if structure_condition
           msa_segment_section = @user.msa_segment.msa_segment_sections.find_by(section_id: wss)
           msa_segment_section.update(newsletters_count: msa_segment_section.newsletters_count.try(:+, 1) || 1)
@@ -31,7 +30,7 @@ class PersonalizedRecoController < ApplicationController
           buf << {
               content_type: section.content_type,
               name: section.name,
-              description: section.description.gsub(/ ---- [QACV\-]/, ''),
+              description: section.description.gsub(/ ---- [QACB\-]/, ''),
               limit: limit,
               content_endpoint: section.content_endpoint + '?user_id=%1$s&frequency=%2$s&duplicates=%3$s'
           }
