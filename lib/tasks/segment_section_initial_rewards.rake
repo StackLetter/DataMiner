@@ -57,3 +57,5 @@ namespace :initial_model do
 
   end
 end
+
+# MsaSegment.includes(msa_segment_sections: :msa_section).all.each {|s| puts(s.name ,s.msa_segment_sections.map {|ss| [ss.reward, ss.msa_section.name].join('-') }.sort.reverse.join('  ->  '), '')}

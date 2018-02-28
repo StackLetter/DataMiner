@@ -204,16 +204,14 @@ class PersonalizedRecoController < ApplicationController
   def new_badges
     new_badges = Badge.new_badges(@from_date, DateTime.now, @user.site_id)
 
-    render json: new_badges.map(&:id)
+    render json: {'congratulations': [], 'new_badges': new_badges.map(&:id)}
   end
 
   def prestigious_badges_count_change
     new_badges = Badge.new_badges(@from_date, DateTime.now, @user.site_id).where(rank: 'gold')
     users_new_badges = @user.user_badges.where('created_at >= ?', @from_date).map {|ub| ub.badge.id}
 
-    output = {'congratulations': users_new_badges, 'prestigious_new_badges': new_badges.map(&:id)}
-
-    render json: output
+    render json: {'congratulations': users_new_badges, 'new_badges': new_badges.map(&:id)}
   end
 
   private
