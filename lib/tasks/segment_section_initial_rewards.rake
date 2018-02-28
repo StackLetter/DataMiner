@@ -51,7 +51,7 @@ namespace :initial_model do
       segment.msa_daily_newsletter_sections.destroy_all
       segment.msa_segment_section_reward_histories.destroy_all
 
-      segment.msa_daily_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, sorted_sections: sorted_segment_sections_ids).save
+      segment.msa_daily_newsletter_sections.build(from: DateTime.now, to: 1.days.from_now, sorted_sections: sorted_segment_sections_ids).save
       segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards, newsletter_type: 'd').save
     end
 
