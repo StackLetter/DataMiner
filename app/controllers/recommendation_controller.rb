@@ -2,8 +2,6 @@ class RecommendationController < ApplicationController
 
   before_action :variables_init
 
-  QUERY_LIMIT = 10
-
   def index
     daily = @frequency == 'd'
     limit = daily ? 2 : 5

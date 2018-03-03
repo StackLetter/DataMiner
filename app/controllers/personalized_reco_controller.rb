@@ -2,8 +2,6 @@ class PersonalizedRecoController < ApplicationController
 
   before_action :variables_init
 
-  QUERY_LIMIT = 10
-
   def index
     daily = @frequency == 'd'
     limit = MsaSection::SECTION_CONTENT_LIMIT
@@ -52,15 +50,14 @@ class PersonalizedRecoController < ApplicationController
     @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
-    if @questions.size < QUERY_LIMIT
-      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+    if @questions.size < QUERY_LIMIT * 5
+      complement = Question.for_site(@user.site_id).existing
                        .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
                        .order(score: :desc, creation_date: :asc)
                        .joins('left join answers on answers.question_id = questions.id')
                        .where('answers.question_id IS NULL')
                        .distinct
-                       .limit(QUERY_LIMIT - @questions.size)
+                       .limit(QUERY_LIMIT * 5)
       where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -76,15 +73,14 @@ class PersonalizedRecoController < ApplicationController
     @questions = @questions.distinct.order(score: :asc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
-    if @questions.size < QUERY_LIMIT
-      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+    if @questions.size < QUERY_LIMIT * 5
+      complement = Question.for_site(@user.site_id).existing
                        .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
                        .order(score: :asc, creation_date: :asc)
                        .joins('left join answers on answers.question_id = questions.id')
                        .where('answers.question_id IS NULL')
                        .distinct
-                       .limit(QUERY_LIMIT - @questions.size)
+                       .limit(QUERY_LIMIT * 5)
       where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -100,15 +96,14 @@ class PersonalizedRecoController < ApplicationController
     @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
-    if @questions.size < QUERY_LIMIT
-      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+    if @questions.size < QUERY_LIMIT * 5
+      complement = Question.for_site(@user.site_id).existing
                        .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
                        .order(score: :desc, creation_date: :asc)
                        .joins('left join answers on answers.question_id = questions.id')
                        .where('answers.question_id IS NOT NULL')
                        .distinct
-                       .limit(QUERY_LIMIT - @questions.size)
+                       .limit(QUERY_LIMIT * 5)
       where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -123,11 +118,11 @@ class PersonalizedRecoController < ApplicationController
     @questions = @questions.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
-    if @questions.size < QUERY_LIMIT
-      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+    if @questions.size < QUERY_LIMIT * 5
+      complement = Question.for_site(@user.site_id).existing
                        .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
-                       .order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT - @questions.size)
+                       .order(score: :desc, creation_date: :asc)
+                       .limit(QUERY_LIMIT * 5)
       where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -136,17 +131,19 @@ class PersonalizedRecoController < ApplicationController
   end
 
   def answers_you_may_be_interested_in
+    @tags = @user.answers.map {|q| q.answer_tags.map(&:tag_id)}
+
     @answers = @tags.empty? ? nil : Answer.for_site(@user.site_id).existing.joins(:answer_tags).where('answers.creation_date > ?', @from_date).where(answer_tags: {tag_id: @tags})
     @answers = Answer.for_site(@user.site_id).existing.where('answers.creation_date > ?', @from_date) unless @answers
     @answers = @answers.where.not(id: @duplicates[:answer]) if @duplicates[:answer]
     @answers = @answers.distinct.order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
-    if @answers.size < QUERY_LIMIT
-      complement = Answer.for_site(@user.site_id).existing.joins(:answer_tags)
+    if @answers.size < QUERY_LIMIT * 5
+      complement = Answer.for_site(@user.site_id).existing
                        .where('answers.creation_date > ?', @max_from_date)
-                       .where(answer_tags: {tag_id: @tags})
-                       .order(score: :desc, creation_date: :asc).limit(QUERY_LIMIT - @answers.size)
+                       .order(score: :desc, creation_date: :asc)
+                       .limit(QUERY_LIMIT * 5)
       where_not = @duplicates[:answer] ? @answers.map(&:id) + @duplicates[:answer] : @answers.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -167,14 +164,15 @@ class PersonalizedRecoController < ApplicationController
     @questions = @tags.empty? ? nil : Question.for_site(@user.site_id).existing.joins(:question_tags).where('questions.creation_date > ?', @from_date).where(question_tags: {tag_id: @tags})
     @questions = Question.for_site(@user.site_id).existing.where('questions.creation_date > ?', @from_date) unless @questions
     @questions = @questions.where.not(id: @duplicates[:question]) if @duplicates[:question]
-    @questions = @questions.distinct.order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT)
+    @questions = @questions.distinct.where.not(comment_count: nil).order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
-    if @questions.size < QUERY_LIMIT
-      complement = Question.for_site(@user.site_id).existing.joins(:question_tags)
+    if @questions.size < QUERY_LIMIT * 5
+      complement = Question.for_site(@user.site_id).existing
                        .where('questions.creation_date > ?', @max_from_date)
-                       .where(question_tags: {tag_id: @tags})
-                       .order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT - @questions.size)
+                       .where.not(comment_count: nil)
+                       .order(comment_count: :desc, creation_date: :asc)
+                       .limit(QUERY_LIMIT * 5)
       where_not = @duplicates[:question] ? @questions.map(&:id) + @duplicates[:question] : @questions.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -183,17 +181,20 @@ class PersonalizedRecoController < ApplicationController
   end
 
   def highly_discussed_answers
+    @tags = @user.answers.map {|q| q.answer_tags.map(&:tag_id)}
+
     @answers = @tags.empty? ? nil : Answer.for_site(@user.site_id).existing.joins(:answer_tags).where('answers.creation_date > ?', @from_date).where(answer_tags: {tag_id: @tags})
     @answers = Answer.for_site(@user.site_id).existing.where('answers.creation_date > ?', @from_date) unless @answers
     @answers = @answers.where.not(id: @duplicates[:answer]) if @duplicates[:answer]
-    @answers = @answers.distinct.order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT)
+    @answers = @answers.distinct.where.not(comment_count: nil).order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT)
 
     complement = []
-    if @answers.size < QUERY_LIMIT
-      complement = Answer.for_site(@user.site_id).existing.joins(:answer_tags)
+    if @answers.size < QUERY_LIMIT * 5
+      complement = Answer.for_site(@user.site_id).existing
                        .where('answers.creation_date > ?', @max_from_date)
-                       .where(answer_tags: {tag_id: @tags})
-                       .order(comment_count: :desc, creation_date: :asc).limit(QUERY_LIMIT - @answers.size)
+                       .where.not(comment_count: nil)
+                       .order(comment_count: :desc, creation_date: :asc)
+                       .limit(QUERY_LIMIT * 5)
       where_not = @duplicates[:answer] ? @answers.map(&:id) + @duplicates[:answer] : @answers.map(&:id)
       complement = complement.where.not(id: where_not)
     end
@@ -222,7 +223,7 @@ class PersonalizedRecoController < ApplicationController
 
     @frequency = recommendation_params[:frequency]
     @from_date = @frequency == 'd' ? 1.day.ago : 7.day.ago
-    @max_from_date = @frequency == 'd' ? 7.day.ago : 21.day.ago
+    @max_from_date = @frequency == 'd' ? 7.day.ago : 12.day.ago
 
     @duplicates = recommendation_params[:duplicates] ? JSON.parse(URI.decode(recommendation_params[:duplicates])).deep_symbolize_keys : {}
 

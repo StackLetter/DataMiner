@@ -3,6 +3,8 @@ class ApplicationController < ActionController::Base
 
   protect_from_forgery with: :exception
 
+  QUERY_LIMIT = 10
+
   def klass_error_msg
     '[Controller Error]'
   end
@@ -26,7 +28,7 @@ class ApplicationController < ActionController::Base
     existing_ids = response['items'].map {|item| item["#{type.downcase}_id"]}
     (ids - existing_ids).each { |id| type.constantize.find_by(external_id: id, site_id: site.id)&.update(removed: true) }
 
-    objects.select { |o| existing_ids.include? o.external_id }.map(&:id)
+    objects.select { |o| existing_ids.include? o.external_id }.map(&:id)[0...QUERY_LIMIT]
   end
 
 end
