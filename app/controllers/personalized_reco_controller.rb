@@ -2,12 +2,21 @@ class PersonalizedRecoController < ApplicationController
 
   before_action :variables_init
 
+  AB_TESTING_THRESHOLD_DAILY = 14
+  AB_TESTING_THRESHOLD_WEEKLY = 2
+
   def index
     daily = @frequency == 'd'
     limit = MsaSection::SECTION_CONTENT_LIMIT
     max_sections = daily ? MsaDailyNewsletterSection::MAX_SECTIONS : MsaWeeklyNewsletterSection::MAX_SECTIONS
     badges_sections = daily ? MsaDailyNewsletterSection::BADGES_SECTIONS : MsaWeeklyNewsletterSection::BADGES_SECTIONS
     day = DateTime.now
+
+    a_b_testing_threshold = daily ? AB_TESTING_THRESHOLD_DAILY : AB_TESTING_THRESHOLD_WEEKLY
+    if @user.newsletters.size < a_b_testing_threshold
+      redirect_to({controller: :recommendation, action: :index}.merge(recommendation_params))
+      return
+    end
 
     sections = daily ? @user.msa_segment.msa_daily_newsletter_sections.where('? >= msa_daily_newsletter_sections.from', day).where('? <= msa_daily_newsletter_sections.to', day).first
                    : @user.msa_segment.msa_weekly_newsletter_sections.where('? >= msa_weekly_newsletter_sections.from', day).where('? <= msa_weekly_newsletter_sections.to', day).first
