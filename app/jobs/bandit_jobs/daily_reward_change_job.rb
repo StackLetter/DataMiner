@@ -1,11 +1,11 @@
-class BanditJobs::WeeklyRewardChangeJob < BanditJobs::BanditJob
+class BanditJobs::DailyRewardChangeJob < BanditJobs::BanditJob
 
   def perform
-    segments = MsaSegment.includes(:msa_weekly_newsletter_sections, msa_segment_sections: :msa_section).all
+    segments = MsaSegment.includes(:msa_daily_newsletter_sections, msa_segment_sections: :msa_section).all
     random = Random.new(Random.new_seed)
 
     segments.each do |segment|
-      current_structure = segment.msa_weekly_newsletter_sections.current
+      current_structure = segment.msa_daily_newsletter_sections.current
 
       sorted_segment_sections = segment.msa_segment_sections.sort_by(&:reward).reverse
       sorted_segment_sections_ids = sorted_segment_sections.map(&:section_id)
@@ -32,9 +32,8 @@ class BanditJobs::WeeklyRewardChangeJob < BanditJobs::BanditJob
       puts 'Epsylon greedy: ', epsylon_greedy_section_ids.join(', ')
 
       current_structure.update! to: DateTime.now if current_structure
-      segment.msa_weekly_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, sorted_sections: epsylon_greedy_section_ids).save!
-      segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards, newsletter_type: 'w').save!
+      segment.msa_daily_newsletter_sections.build(from: DateTime.now, to: 1.days.from_now, sorted_sections: epsylon_greedy_section_ids).save!
+      segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards, newsletter_type: 'd').save!
     end
   end
-
 end

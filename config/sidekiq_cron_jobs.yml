@@ -23,7 +23,12 @@ update_users_segment:
   class: 'BanditJobs::UserSegmentUpdateJob'
   queue: 'default'
 
-#weekly_reward_update:
-#  cron: '0 0 * * 0'
-#  class: 'BanditJobs::WeeklyRewardChangeJob'
-#  queue: 'default'
+weekly_reward_update:
+  cron: '20 4 * * 0'
+  class: 'BanditJobs::WeeklyRewardChangeJob'
+  queue: 'default'
+
+daily_reward_update:
+  cron: '0 4 * * *'
+  class: 'BanditJobs::DailyRewardChangeJob'
+  queue: 'default'
