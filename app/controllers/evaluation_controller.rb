@@ -21,6 +21,19 @@ class EvaluationController < ApplicationController
 
         EvaluationNewsletter.create!(data)
       end
+
+      # Bandit reward change
+      content_type = params['content_type'].try(:to_s)
+      if content_type != 'newsletter'
+        value = (content_type == 'section' ? 2 : 1)
+        value *= params['user_response_detail'].try(:to_i)
+
+        user = Newsletter.find(params['newsletter_id']).user
+        newsletter_section = NewsletterSection.find(params['content_detail'].try(:to_s))
+        sections = MsaSection.where(name: newsletter_section.name)
+
+        BanditJobs::RewardsUpdateJob.perform_later(user.segment_id, sections.first.id, value) if sections.size == 1
+      end
     rescue Exception => e
       ErrorReporter.report(:error, e, "#{klass_error_msg} - Error saving Evaluation model to DB!")
     end

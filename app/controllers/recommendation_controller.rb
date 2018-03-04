@@ -11,7 +11,8 @@ class RecommendationController < ApplicationController
         name: 'Top new questions',
         description: 'The most interesting questions selected by your activity in various tags and their creation date.',
         limit: limit,
-        content_endpoint: URI.unescape(top_new_questions_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
+        content_endpoint: URI.unescape(top_new_questions_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s')),
+        section_id: -1
     }
 
     greatest_hits = {
@@ -19,7 +20,8 @@ class RecommendationController < ApplicationController
         name: "Greatest hits from previous #{daily ? 'week' : 'weeks'}",
         description: 'Valuable questions from the last week selected by your activity in various tags and their score.',
         limit: limit,
-        content_endpoint: URI.unescape(greatest_hits_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
+        content_endpoint: URI.unescape(greatest_hits_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s')),
+        section_id: -1
     }
 
     answer_these = {
@@ -27,7 +29,8 @@ class RecommendationController < ApplicationController
         name: 'Can you answer these?',
         description: 'Unanswered questions selected by your activity in various tags.',
         limit: limit,
-        content_endpoint: URI.unescape(answer_these_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s'))
+        content_endpoint: URI.unescape(answer_these_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s')),
+        section_id: -1
     }
 
     to_return = [top_new_questions, greatest_hits, answer_these]

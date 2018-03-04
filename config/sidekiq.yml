@@ -4,8 +4,10 @@
   - default
   - data_mining
   - new_user
+  - evaluation
 
 :limits:
     default: 2
     data_mining: 1
     new_user: 2
+    evaluation: 1
