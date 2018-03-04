@@ -24,7 +24,7 @@ class EvaluationController < ApplicationController
 
       # Bandit reward change
       content_type = params['content_type'].try(:to_s)
-      if content_type != 'newsletter'
+      if content_type == 'section'
         value = (content_type == 'section' ? 2 : 1)
         value *= params['user_response_detail'].try(:to_i)
 

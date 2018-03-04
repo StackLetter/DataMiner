@@ -24,6 +24,8 @@ namespace :initial_model do
           end
 
         end
+        # TODO pushnut?
+  #      MsaSegmentSection.all.update_all newsletters_count: 0
       end
     end
 
