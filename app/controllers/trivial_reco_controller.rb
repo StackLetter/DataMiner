@@ -1,4 +1,4 @@
-class RecommendationController < ApplicationController
+class TrivialRecoController < ApplicationController
 
   before_action :variables_init
 
@@ -8,6 +8,7 @@ class RecommendationController < ApplicationController
 
     top_new_questions = {
         content_type: 'question',
+        custom: false,
         name: 'Top new questions',
         description: 'The most interesting questions selected by your activity in various tags and their creation date.',
         limit: limit,
@@ -17,15 +18,17 @@ class RecommendationController < ApplicationController
 
     greatest_hits = {
         content_type: 'question',
+        custom: false,
         name: "Greatest hits from previous #{daily ? 'week' : 'weeks'}",
         description: 'Valuable questions from the last week selected by your activity in various tags and their score.',
         limit: limit,
-        content_endpoint: URI.unescape(greatest_hits_url(user_id: '%1$s', frequency: '%2$s', duplicates: '%3$s')),
+        content_endpoint: URI.unescape(greatest_hits_url(user_id: '%1$s',  frequency: '%2$s', duplicates: '%3$s')),
         section_id: -1
     }
 
     answer_these = {
         content_type: 'question',
+        custom: false,
         name: 'Can you answer these?',
         description: 'Unanswered questions selected by your activity in various tags.',
         limit: limit,

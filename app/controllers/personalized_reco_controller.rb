@@ -14,7 +14,7 @@ class PersonalizedRecoController < ApplicationController
 
     a_b_testing_threshold = daily ? AB_TESTING_THRESHOLD_DAILY : AB_TESTING_THRESHOLD_WEEKLY
     if @user.newsletters.size < a_b_testing_threshold
-      redirect_to({controller: :recommendation, action: :index}.merge(recommendation_params))
+      redirect_to({controller: :trivial_reco, action: :index}.merge(recommendation_params))
       return
     end
 
