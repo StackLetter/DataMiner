@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180304170355) do
+ActiveRecord::Schema.define(version: 20180305120924) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -280,6 +280,17 @@ ActiveRecord::Schema.define(version: 20180304170355) do
     t.index ["user_id"], name: "index_user_badges_on_user_id"
   end
 
+  create_table "user_favorites", force: :cascade do |t|
+    t.integer "site_id"
+    t.integer "user_id"
+    t.integer "external_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_user_favorites_on_external_id"
+    t.index ["site_id"], name: "index_user_favorites_on_site_id"
+    t.index ["user_id"], name: "index_user_favorites_on_user_id"
+  end
+
   create_table "user_tags", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "tag_id", null: false
@@ -343,6 +354,8 @@ ActiveRecord::Schema.define(version: 20180304170355) do
   add_foreign_key "questions", "users", column: "owner_id"
   add_foreign_key "user_badges", "badges"
   add_foreign_key "user_badges", "users"
+  add_foreign_key "user_favorites", "sites"
+  add_foreign_key "user_favorites", "users"
   add_foreign_key "user_tags", "tags"
   add_foreign_key "user_tags", "users"
   add_foreign_key "users", "msa_segments", column: "segment_id"

@@ -23,7 +23,7 @@ module SingleLevelStackApiModelConcern
 
     self::API_ATTRIBUTES = self.column_names.select {|column| !['created_at', 'updated_at', 'id', 'external_id', 'site_id', 'account_id', 'removed', 'accepted_answer_external_id', 'segment_id', 'segment_changed'].include?(column)}
 
-    def self.process_json_items(items, site_id)
+    def self.process_json_items(items, site_id, ids = nil)
       self.transaction do
         items.each do |item|
 

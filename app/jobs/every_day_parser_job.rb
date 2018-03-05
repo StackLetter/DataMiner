@@ -14,6 +14,8 @@ class EveryDayParserJob < ApplicationJob
       user_with_tags = users.select {|user| user.user_tags.size > 0}.map(&:external_id)
       UserTagParserJob.perform_later('all', site.id, users_without_tags) unless users_without_tags.empty?
       UserTagParserJob.perform_later('new', site.id, user_with_tags) unless user_with_tags.empty?
+
+      users.each {|user| GenericParserJob.perform_later('UserFavorite', [user.external_id], site.id, {sort: 'creation'}) }
     end
   end
 

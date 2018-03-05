@@ -60,7 +60,7 @@ class GenericParserJob < ApplicationJob
         raise
       end
 
-      model.constantize.process_json_items response['items'], site_id
+      model.constantize.process_json_items response['items'], site_id, ids
 
       access_token = next_token(access_token) if response['quota_remaining'].to_i <= 2
       return unless access_token

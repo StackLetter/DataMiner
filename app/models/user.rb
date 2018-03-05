@@ -11,6 +11,7 @@ class User < ApplicationRecord
   has_many :questions, dependent: :destroy, foreign_key: :owner_id
   has_many :answers, dependent: :destroy, foreign_key: :owner_id
   has_many :comments, dependent: :destroy, foreign_key: :owner_id
+  has_many :user_favorites
   has_many :newsletters
   has_many :evaluation_newsletters, through: :newsletters
   belongs_to :msa_segment, foreign_key: :segment_id, optional: true

@@ -11,7 +11,7 @@ module DoubleLevelStackApiModelConcern
       self.find_by(external_id: api_item_response['external_id'], site_id: site_id)
     end
 
-    def self.process_json_items(items, site_id)
+    def self.process_json_items(items, site_id, ids = nil)
       models = self.name.underscore.split('_')
       base_model = models[0]
       base_model_identifier = base_model + '_id'
