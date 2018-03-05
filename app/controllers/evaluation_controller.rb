@@ -31,7 +31,7 @@ class EvaluationController < ApplicationController
 
         newsletter_section = NewsletterSection.find(params['content_detail'].try(:to_s))
         sections = MsaSection.where(name: newsletter_section.name)
-      elsif params['user_response_type'].try(:to_s) == 'click'
+      elsif params['user_response_type'].try(:to_s) == 'click' && ['question', 'answer', 'badge', 'comment'].include?(content_type)
         value = 1
 
         newsletter_section = newsletter.newsletter_sections.select {|section| section.content_ids.include? params['content_detail'].try(:to_i)}.first
