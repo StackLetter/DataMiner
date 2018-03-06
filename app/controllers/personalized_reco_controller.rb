@@ -228,7 +228,7 @@ class PersonalizedRecoController < ApplicationController
   private
 
   def variables_init
-    @user = User.includes(:user_tags, questions: :question_tags).find(recommendation_params[:user_id])
+    @user = User.includes(:user_tags, :user_favorites, questions: :question_tags).find(recommendation_params[:user_id])
     head 400 unless @user
 
     @frequency = recommendation_params[:frequency]
@@ -237,7 +237,11 @@ class PersonalizedRecoController < ApplicationController
 
     @duplicates = recommendation_params[:duplicates] ? JSON.parse(URI.decode(recommendation_params[:duplicates])).deep_symbolize_keys : {}
 
-    @tags = @user.user_tags.map(&:tag_id)
+    user_favorites_tags = @user.user_favorites.count == 0 ? [] :
+                              Question.includes(:question_tags).where(external_id: @user.user_favorites.map(&:external_id)).map(&:question_tags).flatten.map(&:tag_id).uniq
+
+    @tags = user_favorites_tags
+    @tags << @user.user_tags.map(&:tag_id)
     @tags << @user.questions.map {|q| q.question_tags.map(&:tag_id)}
     @tags = @tags.flatten
     @tags = @tags.group_by {|tag| tag}.map {|tag_id, tags| [tags.size, tag_id]}.sort.reverse.map {|n| n[1]} # WARNING - remove map, and setup priority in DB queries
