@@ -32,7 +32,8 @@ class PersonalizedRecoController < ApplicationController
         structure_condition = structure_condition && (@user.new_badges?(sections.from) || Badge.new_badges(sections.from, sections.to, @user.site_id).where(rank: 'gold').any?)  if section.name == 'Prestigious badges'
         if structure_condition
           msa_segment_section = @user.msa_segment.msa_segment_sections.find_by(section_id: wss)
-          msa_segment_section.update(newsletters_count: msa_segment_section.newsletters_count.try(:+, 1) || 1)
+          daily ? msa_segment_section.update(daily_newsletters_count: msa_segment_section.daily_newsletters_count.try(:+, 1) || 1) :
+              msa_segment_section.update(weekly_newsletters_count: msa_segment_section.weekly_newsletters_count.try(:+, 1) || 1)
 
           buf << {
               content_type: section.content_type,

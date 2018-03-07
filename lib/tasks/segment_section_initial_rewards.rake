@@ -24,13 +24,16 @@ namespace :initial_model do
           end
 
         end
-        MsaSegmentSection.all.update_all newsletters_count: 0
+        MsaSegmentSection.all.update_all daily_newsletters_count: 0
+        MsaSegmentSection.all.update_all weekly_newsletters_count: 0
       end
     end
 
   end
 
   task :initial_week_structure => :environment do
+    MsaSegmentSection.all.update_all daily_newsletters_count: 0
+    MsaSegmentSection.all.update_all weekly_newsletters_count: 0
 
     MsaSegment.includes(:msa_weekly_newsletter_sections, msa_segment_sections: :msa_section).all.each do |segment|
       sorted_segment_sections = segment.msa_segment_sections.sort_by(&:reward).reverse

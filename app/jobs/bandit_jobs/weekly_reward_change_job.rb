@@ -5,7 +5,7 @@ class BanditJobs::WeeklyRewardChangeJob < BanditJobs::BanditJob
     random = Random.new(Random.new_seed)
 
     segments.each do |segment|
-      current_structure = segment.msa_weekly_newsletter_sections.current
+      current_structure = segment.msa_weekly_newsletter_sections.current.first
 
       sorted_segment_sections = segment.msa_segment_sections.sort_by(&:reward).reverse
       sorted_segment_sections_ids = sorted_segment_sections.map(&:section_id)
@@ -33,7 +33,8 @@ class BanditJobs::WeeklyRewardChangeJob < BanditJobs::BanditJob
 
       current_structure.update! to: DateTime.now if current_structure
       segment.msa_weekly_newsletter_sections.build(from: DateTime.now, to: 7.days.from_now, sorted_sections: epsylon_greedy_section_ids).save!
-      segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards, newsletter_type: 'w').save!
+      segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards,
+                                                         newsletter_type: 'w', weekly_newsletters_count: sorted_segment_sections.map(&:weekly_newsletters_count)).save!
     end
   end
 

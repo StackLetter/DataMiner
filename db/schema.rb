@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20180305120924) do
+ActiveRecord::Schema.define(version: 20180307183352) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -147,6 +147,8 @@ ActiveRecord::Schema.define(version: 20180305120924) do
     t.string "newsletter_type"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "daily_newsletters_count", array: true
+    t.integer "weekly_newsletters_count", array: true
     t.index ["segment_id"], name: "index_msa_segment_section_reward_histories_on_segment_id"
   end
 
@@ -156,7 +158,8 @@ ActiveRecord::Schema.define(version: 20180305120924) do
     t.float "reward"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "newsletters_count"
+    t.integer "daily_newsletters_count"
+    t.integer "weekly_newsletters_count"
     t.index ["section_id"], name: "index_msa_segment_sections_on_section_id"
     t.index ["segment_id"], name: "index_msa_segment_sections_on_segment_id"
   end
