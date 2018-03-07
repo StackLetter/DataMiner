@@ -35,6 +35,7 @@ class BanditJobs::DailyRewardChangeJob < BanditJobs::BanditJob
       segment.msa_daily_newsletter_sections.build(from: DateTime.now, to: 1.days.from_now, sorted_sections: epsylon_greedy_section_ids).save!
       segment.msa_segment_section_reward_histories.build(sections_ids: sorted_segment_sections_ids, sections_rewards: sorted_segment_sections_rewards, newsletter_type: 'd',
                                                         daily_newsletters_count: sorted_segment_sections.map(&:daily_newsletters_count)).save!
+      segment.msa_segment_sections.update_all(daily_newsletters_count: 0)
     end
   end
 end
