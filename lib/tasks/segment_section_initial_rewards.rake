@@ -31,6 +31,19 @@ namespace :initial_model do
 
   end
 
+  task :load_initial_rewards => :environment do
+    ActiveRecord::Base.transaction do
+      MsaSegment.all.each do |segment|
+        initial_model = segment.msa_segment_section_reward_histories.last
+
+        segment.msa_segment_sections.each do |segment_section|
+          index_of_reward = initial_model.sections_ids.find_index(segment_section.section_id)
+          segment_section.update!(reward: initial_model.sections_rewards[index_of_reward])
+        end
+      end
+    end
+  end
+
   task :initial_week_structure => :environment do
     MsaSegmentSection.all.update_all daily_newsletters_count: 0
     MsaSegmentSection.all.update_all weekly_newsletters_count: 0
