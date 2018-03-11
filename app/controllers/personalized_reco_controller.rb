@@ -41,7 +41,7 @@ class PersonalizedRecoController < ApplicationController
               name: section.name,
               description: section.description.gsub(/ ---- [QACB\-]/, ''),
               limit: limit,
-              content_endpoint: section.content_endpoint + '?user_id=%1$s&frequency=%2$s&duplicates=%3$s',
+              content_endpoint: section.content_endpoint + section.filter_query,
               section_id: section.id
           }
         end
