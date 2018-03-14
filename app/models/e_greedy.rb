@@ -2,11 +2,11 @@ class EGreedy
 
   EPSYLON = 0.1
 
-  DAILY_SECTION_REWARD = 1.5
-  WEEKLY_SECTION_REWARD = 10
+  DAILY_SECTION_REWARD = 8
+  WEEKLY_SECTION_REWARD = 8
 
-  DAILY_OPEN_REWARD = 0.75
-  WEEKLY_OPEN_REWARD = 5
+  DAILY_OPEN_REWARD = 4
+  WEEKLY_OPEN_REWARD = 4
 
   def self.get_reward(frequency, type)
     return DAILY_SECTION_REWARD if type == 'section' && frequency == 'd'
