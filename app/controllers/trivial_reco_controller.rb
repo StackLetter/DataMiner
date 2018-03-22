@@ -4,7 +4,7 @@ class TrivialRecoController < ApplicationController
 
   def index
     daily = @frequency == 'd'
-    limit = daily ? 2 : 5
+    limit = 5
 
     top_new_questions = {
         content_type: 'question',
