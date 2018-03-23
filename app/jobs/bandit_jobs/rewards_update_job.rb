@@ -7,9 +7,14 @@
 
     correct_history = MsaSegmentSectionRewardHistory.where(newsletter_type: frequency).where(segment_id: segment_id).where('created_at < ?', newsletter_created_at).first
     history_max = correct_history.sections_rewards.max
-    specific_count = frequency == 'd' ?
-                         correct_history.daily_newsletters_count[correct_history.sections_ids.index(section_id)] :
-                         correct_history.weekly_newsletters_count[correct_history.sections_ids.index(section_id)]
+
+    if (newsletter_created_at.to_datetime - 1.day).at_beginning_of_day == DateTime.now.at_beginning_of_day
+      specific_count = (frequency == 'd' ? segment_section.daily_newsletters_count : segment_section.weekly_newsletters_count)
+    else
+      specific_count = (frequency == 'd' ?
+                           correct_history.daily_newsletters_count[correct_history.sections_ids.index(section_id)] :
+                           correct_history.weekly_newsletters_count[correct_history.sections_ids.index(section_id)])
+    end
 
     if specific_count == 0
       raise Exception.new, "Specific count is 0! => Segment #{segment_id}, Section #{section_id}, NewsletterCreatedAt #{newsletter_created_at}"
