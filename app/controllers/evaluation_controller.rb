@@ -38,7 +38,7 @@ class EvaluationController < ApplicationController
         newsletter_section = newsletter.newsletter_sections.select {|section| section.content_ids.include? params['content_detail'].try(:to_i)}.first
         sections = MsaSection.where(name: newsletter_section.name)
       end
-      BanditJobs::RewardsUpdateJob.perform_later(newsletter.user.segment_id, sections.first.id, value, frequency, (newsletter.created_at + 1.day).to_s) if sections.size == 1
+      BanditJobs::RewardsUpdateJob.perform_later(newsletter.user.segment_id, sections.first.id, value, frequency, (newsletter.created_at + 1.day).to_s) if sections.size == 1 && ![2297658, 880823].include?(newsletter.user.id)
 
     rescue Exception => e
       ErrorReporter.report(:error, e, "#{klass_error_msg} - Error saving Evaluation model to DB!")
