@@ -1,3 +1,15 @@
+# == Schema Information
+#
+# Table name: user_favorites
+#
+#  id          :integer          not null, primary key
+#  site_id     :integer
+#  user_id     :integer
+#  external_id :integer
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#
+
 class UserFavorite < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include CustomFindsConcern

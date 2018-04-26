@@ -1,3 +1,22 @@
+# == Schema Information
+#
+# Table name: comments
+#
+#  id            :integer          not null, primary key
+#  external_id   :integer
+#  site_id       :integer
+#  answer_id     :integer
+#  question_id   :integer
+#  owner_id      :integer
+#  score         :integer
+#  creation_date :datetime
+#  body          :text
+#  post_type     :string
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  removed       :boolean
+#
+
 class Comment < ApplicationRecord
   include OwnerValidationConcern
   include SiteIdScopedConcern

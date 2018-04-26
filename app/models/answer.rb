@@ -1,3 +1,27 @@
+# == Schema Information
+#
+# Table name: answers
+#
+#  id                   :integer          not null, primary key
+#  external_id          :integer
+#  site_id              :integer
+#  up_vote_count        :integer
+#  down_vote_count      :integer
+#  owner_id             :integer
+#  question_id          :integer
+#  score                :integer
+#  creation_date        :datetime
+#  community_owned_date :datetime
+#  last_activity_date   :datetime
+#  locked_date          :datetime
+#  body                 :text
+#  is_accepted          :boolean
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  removed              :boolean
+#  comment_count        :integer
+#
+
 class Answer < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include ApiTagsIncludedConcern

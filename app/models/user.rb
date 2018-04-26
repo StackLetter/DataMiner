@@ -1,3 +1,35 @@
+# == Schema Information
+#
+# Table name: users
+#
+#  id                      :integer          not null, primary key
+#  external_id             :integer
+#  account_id              :integer
+#  site_id                 :integer
+#  age                     :integer
+#  reputation              :integer
+#  accept_rate             :integer
+#  reputation_change_month :integer
+#  reputation_change_year  :integer
+#  reputation_change_week  :integer
+#  creation_date           :datetime
+#  last_access_date        :datetime
+#  display_name            :string
+#  user_type               :string
+#  website_url             :string
+#  location                :string
+#  is_employee             :boolean
+#  created_at              :datetime         not null
+#  updated_at              :datetime         not null
+#  removed                 :boolean
+#  answers_count           :integer
+#  questions_count         :integer
+#  user_badges_count       :integer
+#  comments_count          :integer
+#  segment_id              :integer
+#  segment_changed         :boolean
+#
+
 class User < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include CustomFindsConcern

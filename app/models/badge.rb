@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: badges
+#
+#  id            :integer          not null, primary key
+#  external_id   :integer
+#  site_id       :integer
+#  award_count   :integer
+#  user_profiled :boolean          default(FALSE)
+#  badge_type    :string
+#  rank          :string
+#  name          :string
+#  description   :text
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#
+
 class Badge < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include CustomFindsConcern

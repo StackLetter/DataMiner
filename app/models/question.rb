@@ -1,3 +1,33 @@
+# == Schema Information
+#
+# Table name: questions
+#
+#  id                          :integer          not null, primary key
+#  accepted_answer_id          :integer
+#  bounty_amount               :integer
+#  external_id                 :integer
+#  site_id                     :integer
+#  owner_id                    :integer
+#  score                       :integer
+#  up_vote_count               :integer
+#  down_vote_count             :integer
+#  view_count                  :integer
+#  bounty_closes_date          :datetime
+#  closed_date                 :datetime
+#  creation_date               :datetime
+#  community_owned_date        :datetime
+#  last_activity_date          :datetime
+#  locked_date                 :datetime
+#  body                        :text
+#  title                       :string
+#  is_answered                 :boolean
+#  created_at                  :datetime         not null
+#  updated_at                  :datetime         not null
+#  removed                     :boolean
+#  accepted_answer_external_id :integer
+#  comment_count               :integer
+#
+
 class Question < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include ApiTagsIncludedConcern

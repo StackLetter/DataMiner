@@ -1,6 +1,6 @@
 class EGreedy
 
-  EPSYLON = 0.1
+  EPSYLON = 0.2
 
   DAILY_SECTION_REWARD = 5
   WEEKLY_SECTION_REWARD = 5

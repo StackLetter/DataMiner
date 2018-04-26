@@ -1,3 +1,20 @@
+# == Schema Information
+#
+# Table name: tags
+#
+#  id                :integer          not null, primary key
+#  site_id           :integer
+#  external_id       :integer
+#  has_synonyms      :boolean
+#  is_moderator_only :boolean
+#  is_required       :boolean
+#  user_profiled     :boolean          default(FALSE)
+#  synonyms          :string           default([]), is an Array
+#  name              :string
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#
+
 class Tag < ApplicationRecord
   include SingleLevelStackApiModelConcern
   include CustomFindsConcern

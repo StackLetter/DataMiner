@@ -1,3 +1,15 @@
+# == Schema Information
+#
+# Table name: msa_segments
+#
+#  id           :integer          not null, primary key
+#  name         :string
+#  description  :text
+#  r_identifier :integer
+#  created_at   :datetime         not null
+#  updated_at   :datetime         not null
+#
+
 class MsaSegment < ApplicationRecord
 
   has_many :users
